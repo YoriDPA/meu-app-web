@@ -3,137 +3,37 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Minha Lista de Tarefas</title>
+    <title>Meu Web App Interativo</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
-    <style>
-      /* Estilo para o corpo da página */
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        background-color: #f0f2f5; /* Um cinza bem claro para o fundo */
-        color: #1c1e21; /* Cor do texto principal, um cinza escuro */
-        margin: 0;
-        padding: 2em; /* Espaçamento nas bordas */
-        display: flex;
-        justify-content: center; /* Centraliza o nosso 'card' na horizontal */
-      }
-
-      /* NOVO: Criamos um 'container' para nosso app ter a aparência de um cartão */
-      .app-container {
-        background-color: white; /* Fundo branco para o nosso app */
-        padding: 2em;
-        border-radius: 8px; /* Cantos arredondados */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra suave para dar profundidade */
-        width: 100%;
-        max-width: 500px; /* Largura máxima para não ficar muito largo em telas grandes */
-      }
-
-      /* Estilo para o campo de input */
-      input {
-        width: 100%;
-        padding: 10px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        box-sizing: border-box; /* Garante que o padding não aumente a largura total */
-      }
-
-      /* Estilo para o botão */
-      .py-button {
-        width: 100%;
-        padding: 10px 15px;
-        border: none;
-        background-color: #007bff; /* Um azul bonito */
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-        border-radius: 6px;
-        cursor: pointer; /* Muda o cursor para uma 'mãozinha' ao passar por cima */
-        margin-top: 10px; /* Espaço entre o input e o botão */
-        transition: background-color 0.2s; /* Animação suave na cor */
-      }
-
-      /* NOVO: Efeito que acontece quando o mouse passa por cima do botão */
-      .py-button:hover {
-        background-color: #0056b3; /* Um tom de azul mais escuro */
-      }
-
-      /* Estilo para a lista de tarefas */
-      ul {
-        list-style-type: none; /* Remove os marcadores padrão da lista */
-        padding-left: 0;
-      }
-
-      li {
-        background-color: #f9f9f9;
-        padding: 10px;
-        border-bottom: 1px solid #eee;
-      }
-
-      li:first-child {
-        border-top-left-radius: 6px;
-        border-top-right-radius: 6px;
-      }
-
-      li:last-child {
-        border-bottom: none;
-        border-bottom-left-radius: 6px;
-        border-bottom-right-radius: 6px;
-      }
-
-    </style>
   </head>
   <body>
-    <div class="app-container">
-      <h1>Minha Lista de Tarefas</h1>
+    <h1>Meu Aplicativo Interativo</h1>
 
-      <label for="tarefa_input">Nova tarefa:</label><br>
-      <input id="tarefa_input" type="text" placeholder="Ex: Aprender CSS">
+    <label for="nome_input">Digite seu nome:</label><br>
+    <input id="nome_input" type="text" placeholder="Seu nome aqui">
 
-      <button py-click="adicionar_tarefa" class="py-button">Adicionar Tarefa</button>
+    <button py-click="cumprimentar" class="py-button">Diga Olá!</button>
 
-      <hr>
+    <hr>
 
-      <h2>Tarefas a fazer:</h2>
-      <div id="lista_de_tarefas"></div>
-    </div>
+    <h2><div id="output_div"></div></h2>
 
     <py-script>
       from pyscript import display
-      from js import document, localStorage
-      import json
+      import pyscript # Importamos a biblioteca principal
 
-      tarefas = []
+      def cumprimentar():
+        # Usamos o pyscript.js para acessar o 'document' do navegador e pegar o elemento pelo seu 'id'.
+        input_do_nome = pyscript.js.document.getElementById("nome_input")
+        nome_do_usuario = input_do_nome.value
 
-      def renderizar_lista():
-        html_da_lista = "<ul>"
-        for tarefa in tarefas:
-          html_da_lista += f"<li>{tarefa}</li>"
-        html_da_lista += "</ul>"
-        display(html_da_lista, target="lista_de_tarefas", append=False)
+        if nome_do_usuario:
+          mensagem = f"Olá, {nome_do_usuario}! Bem-vindo de volta!"
+        else:
+          mensagem = "Por favor, digite seu nome primeiro."
 
-      def adicionar_tarefa():
-        input_tarefa = document.getElementById("tarefa_input")
-        nova_tarefa = input_tarefa.value
-        if nova_tarefa:
-          tarefas.append(nova_tarefa)
-          input_tarefa.value = ""
-          renderizar_lista()
-          salvar_tarefas()
-
-      def salvar_tarefas():
-        localStorage.setItem("minhas_tarefas", json.dumps(tarefas))
-        print("Lista salva!")
-
-      def carregar_tarefas():
-        tarefas_salvas_texto = localStorage.getItem("minhas_tarefas")
-        if tarefas_salvas_texto:
-          tarefas.extend(json.loads(tarefas_salvas_texto))
-          renderizar_lista()
-          print("Lista carregada do localStorage!")
-
-      carregar_tarefas()
+        display(mensagem, target="output_div", append=False)
     </py-script>
   </body>
 </html>
