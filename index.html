@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Minha Lista de Tarefas</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    <style>
+      body { font-family: sans-serif; padding: 2em; }
+      input { margin-bottom: 1em; }
+      ul { list-style-type: square; }
+    </style>
+  </head>
+  <body>
+    <h1>Minha Lista de Tarefas</h1>
+    
+    <label for="tarefa_input">Nova tarefa:</label><br>
+    <input id="tarefa_input" type="text" placeholder="Ex: Aprender PyScript">
+    
+    <button py-click="adicionar_tarefa" class="py-button">Adicionar Tarefa</button>
+    
+    <hr>
+    
+    <h2>Tarefas a fazer:</h2>
+    <div id="lista_de_tarefas"></div>
+
+    <py-script>
+      from pyscript import display
+      import json
+      # NOVO MÉTODO: Importando as ferramentas do navegador diretamente.
+      # Isso é mais estável e é a forma recomendada.
+      from js import document, localStorage
+
+      tarefas = []
+
+      def renderizar_lista():
+        """Função que desenha a lista de tarefas na tela."""
+        html_da_lista = "<ul>"
+        for tarefa in tarefas:
+          html_da_lista += f"<li>{tarefa}</li>"
+        html_da_lista += "</ul>"
+        display(html_da_lista, target="lista_de_tarefas", append=False)
+
+      def adicionar_tarefa():
+        # MUDANÇA: Usando 'document' diretamente, pois o importamos lá em cima.
+        input_tarefa = document.getElementById("tarefa_input")
+        nova_tarefa = input_tarefa.value
+        if nova_tarefa:
+          tarefas.append(nova_tarefa)
+          input_tarefa.value = ""
+          renderizar_lista()
+          salvar_tarefas()
+
+      def salvar_tarefas():
+        """Converte a lista Python para texto e salva no localStorage."""
+        # MUDANÇA: Usando 'localStorage' diretamente.
+        localStorage.setItem("minhas_tarefas", json.dumps(tarefas))
+        print("Lista salva!")
+
+      def carregar_tarefas():
+        """Verifica o localStorage e carrega as tarefas se elas existirem."""
+        # MUDANÇA: Usando 'localStorage' diretamente.
+        tarefas_salvas_texto = localStorage.getItem("minhas_tarefas")
+        if tarefas_salvas_texto:
+          tarefas.extend(json.loads(tarefas_salvas_texto))
+          renderizar_lista()
+          print("Lista carregada do localStorage!")
+
+      # --- Início do Programa ---
+      carregar_tarefas()
+    </py-script>
+  </body>
+</html>
