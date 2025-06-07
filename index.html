@@ -1,39 +1,121 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-  <head>
+<head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Meu Web App Interativo</title>
+    <title>Meu App de Vídeos</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-  </head>
-  <body>
-    <h1>Meu Aplicativo Interativo</h1>
 
-    <label for="nome_input">Digite seu nome:</label><br>
-    <input id="nome_input" type="text" placeholder="Seu nome aqui">
+    <style>
+        /* Reseta margens e paddings padrão do navegador */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    <button py-click="cumprimentar" class="py-button">Diga Olá!</button>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212; /* Fundo escuro, comum em apps de vídeo */
+            color: #ffffff; /* Texto branco */
+        }
 
-    <hr>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto; /* Centraliza o conteúdo principal */
+            padding: 0 20px;
+        }
 
-    <h2><div id="output_div"></div></h2>
+        /* Estilo do Cabeçalho e Menu de Navegação */
+        .app-header {
+            background-color: #1f1f1f; /* Um cinza um pouco mais claro que o fundo */
+            padding: 1rem 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .app-header .container {
+            display: flex;
+            justify-content: space-between; /* Alinha o logo na esquerda e o menu na direita */
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .main-nav ul {
+            list-style-type: none; /* Remove os pontinhos da lista */
+            display: flex;
+            gap: 20px; /* Espaço entre os itens do menu */
+        }
+
+        .main-nav a {
+            color: #ffffff;
+            text-decoration: none; /* Remove o sublinhado dos links */
+            font-size: 1rem;
+            transition: color 0.3s;
+        }
+
+        .main-nav a:hover {
+            color: #007bff; /* Muda a cor ao passar o mouse */
+        }
+
+        /* Estilo da Área de Conteúdo Principal */
+        .main-content {
+            padding: 40px 0;
+        }
+        
+        .main-content h1 {
+            margin-bottom: 20px;
+        }
+
+        /* Estilo do Rodapé */
+        .app-footer {
+            background-color: #1f1f1f;
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-top: 40px;
+            border-top: 1px solid #333;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="app-header">
+        <div class="container">
+            <div class="logo">VideoApp</div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#">Início</a></li>
+                    <li><a href="#">Categorias</a></li>
+                    <li><a href="#">Favoritos</a></li>
+                    <li><a href="#">Sobre</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <h1>Vídeos em Destaque</h1>
+            <p>Em breve, a lista de vídeos aparecerá aqui...</p>
+        </div>
+    </main>
+
+    <footer class="app-footer">
+        <div class="container">
+            &copy; 2025 VideoApp. Todos os direitos reservados.
+        </div>
+    </footer>
 
     <py-script>
-      from pyscript import display
-      import pyscript # Importamos a biblioteca principal
-
-      def cumprimentar():
-        # Usamos o pyscript.js para acessar o 'document' do navegador e pegar o elemento pelo seu 'id'.
-        input_do_nome = pyscript.js.document.getElementById("nome_input")
-        nome_do_usuario = input_do_nome.value
-
-        if nome_do_usuario:
-          mensagem = f"Olá, {nome_do_usuario}! Bem-vindo de volta!"
-        else:
-          mensagem = "Por favor, digite seu nome primeiro."
-
-        display(mensagem, target="output_div", append=False)
+      # Por enquanto, não precisamos de nenhum código Python.
+      # Mas já deixamos o espaço preparado.
+      print("Estrutura do App de Vídeos carregada.")
     </py-script>
-  </body>
+
+</body>
 </html>
