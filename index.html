@@ -1,23 +1,53 @@
-def adicionar_tarefa():
-    input_tarefa = document.getElementById("tarefa_input")
-    nova_tarefa = input_tarefa.value.strip()
-    if nova_tarefa:
-        tarefas.append(nova_tarefa)
-        input_tarefa.value = ""
-        renderizar_lista()
-        salvar_tarefas()
-        mostrar_mensagem("Tarefa adicionada com sucesso!", "green")
+from pyscript import display
+from js import document, localStorage, console
+import json
+
+tarefas = []
+
+def renderizar_lista():
+    try:
+        html_da_lista = "<ul>"
+        for i, tarefa in enumerate(tarefas):
+            html_da_lista += f'<li>{tarefa} <button class="delete-button" py-click="remover_tarefa" value="{i}">X</button></li>'
+        html_da_lista += "</ul>"
+        display(html_da_lista, target="lista_de_tarefas", append=False)
+    except Exception as e:
+        console.log(f"Erro em renderizar_lista: {e}")
 
 def remover_tarefa(event):
-    indice_para_remover = int(event.target.value)
-    tarefa_removida = tarefas.pop(indice_para_remover)
-    salvar_tarefas()
-    renderizar_lista()
-    mostrar_mensagem(f"Tarefa '{tarefa_removida}' removida!", "red")
+    try:
+        indice_para_remover = int(event.target.value)
+        tarefas.pop(indice_para_remover)
+        salvar_tarefas()
+        renderizar_lista()
+    except Exception as e:
+        console.log(f"Erro em remover_tarefa: {e}")
 
-def mostrar_mensagem(texto, cor):
-    mensagem_div = document.getElementById("mensagem")
-    mensagem_div.innerText = texto
-    mensagem_div.style.color = cor
-    mensagem_div.style.display = "block"
-    setTimeout(lambda: mensagem_div.style.display = "none", 2000)
+def adicionar_tarefa():
+    try:
+        input_tarefa = document.getElementById("tarefa_input")
+        nova_tarefa = input_tarefa.value.strip()
+        if nova_tarefa:
+            tarefas.append(nova_tarefa)
+            input_tarefa.value = ""
+            renderizar_lista()
+            salvar_tarefas()
+    except Exception as e:
+        console.log(f"Erro em adicionar_tarefa: {e}")
+
+def salvar_tarefas():
+    try:
+        localStorage.setItem("minhas_tarefas", json.dumps(tarefas))
+    except Exception as e:
+        console.log(f"Erro em salvar_tarefas: {e}")
+
+def carregar_tarefas():
+    try:
+        tarefas_salvas_texto = localStorage.getItem("minhas_tarefas")
+        if tarefas_salvas_texto:
+            tarefas.extend(json.loads(tarefas_salvas_texto))
+            renderizar_lista()
+    except Exception as e:
+        console.log(f"Erro em carregar_tarefas: {e}")
+
+carregar_tarefas()
