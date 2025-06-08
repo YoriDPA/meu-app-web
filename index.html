@@ -1,139 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mineiro</title>
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .app-header {
-            background-color: #1f1f1f;
-            padding: 1rem 0;
-            border-bottom: 1px solid #333;
-        }
-        .app-header .container { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .main-nav ul { list-style-type: none; display: flex; align-items: center; gap: 20px; }
-        .main-nav a {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: block; /* Garante que o link ocupe todo o espaço do li */
-            padding: 5px 0; /* Pequeno ajuste de espaçamento */
-        }
-        .main-nav a:hover, .main-nav a.active { color: #007bff; }
-
-        /* --- INÍCIO DOS ESTILOS DO DROPDOWN --- */
-        
-        /* O container do item de menu que terá o dropdown */
-        .dropdown {
-            position: relative; /* Essencial para posicionar o menu dropdown abaixo dele */
-            display: inline-block;
-        }
-
-        /* O conteúdo do dropdown (a lista <ul> aninhada) */
-        .dropdown-content {
-            display: none; /* Escondido por padrão */
-            position: absolute; /* Posicionado em relação ao .dropdown */
-            background-color: #2a2a2a; /* Cor de fundo do dropdown */
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-            z-index: 1; /* Garante que o dropdown fique na frente de outros elementos */
-            list-style-type: none; /* Remove bolinhas da sub-lista */
-            border-radius: 4px; /* Cantos arredondados */
-        }
-
-        /* Links dentro do dropdown */
-        .dropdown-content a {
-            padding: 12px 16px;
-            text-align: left;
-            font-size: 0.9rem; /* Fonte um pouco menor */
-        }
-
-        .dropdown-content a:hover {
-            background-color: #3c3c3c; /* Fundo do item ao passar o mouse */
-        }
-
-        /* A MÁGICA: Mostra o dropdown quando o mouse passa por cima do .dropdown */
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-        
-        /* --- FIM DOS ESTILOS DO DROPDOWN --- */
-
-        .main-content { padding: 40px 0; }
-        .main-content h1 { margin-bottom: 20px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .video-card {
-            background-color: #1f1f1f;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .video-card:hover { transform: scale(1.05); }
-        .video-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .video-card h3 { padding: 15px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .app-footer {
-            background-color: #1f1f1f;
-            text-align: center;
-            padding: 1.5rem 0;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-
-    <header class="app-header">
-        <div class="container">
-            <div class="logo">Mineiro</div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
-                    
-                    <li class="dropdown">
-                        <a id="nav-categorias" href="javascript:void(0)">Categorias</a>
-                        <ul class="dropdown-content">
-                            <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
-                            <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
-                            <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
-                            <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="container">
-            <h1 id="titulo-categoria">Todos os Vídeos</h1>
-            <div id="video-list" class="video-grid"></div>
-        </div>
-    </main>
-
-    <footer class="app-footer">
-        <div class="container">
-            &copy; 2025 Mineiro. Todos os direitos reservados.
-        </div>
-    </footer>
-
-    <py-script>
-        from pyscript import display, HTML, Element
+<py-script>
+        from pyscript import display, HTML
+        import pyscript # CORREÇÃO: Importamos a biblioteca principal
 
         videos = [
             { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
@@ -146,35 +13,37 @@
             { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
         ]
 
-        # PEQUENA MUDANÇA AQUI PARA INCLUIR O LINK 'CATEGORIAS'
-        titulo_categoria = Element("titulo-categoria")
+        # CORREÇÃO: Acessamos os elementos usando o caminho completo do pyscript.js
+        titulo_categoria = pyscript.js.document.getElementById("titulo-categoria")
         nav_links = {
-            "todos": Element("nav-todos"), "categorias": Element("nav-categorias"),
-            "filmes": Element("nav-filmes"), "series": Element("nav-series"),
-            "animes": Element("nav-animes"), "adultos": Element("nav-adultos")
+            "todos": pyscript.js.document.getElementById("nav-todos"),
+            "categorias": pyscript.js.document.getElementById("nav-categorias"),
+            "filmes": pyscript.js.document.getElementById("nav-filmes"),
+            "series": pyscript.js.document.getElementById("nav-series"),
+            "animes": pyscript.js.document.getElementById("nav-animes"),
+            "adultos": pyscript.js.document.getElementById("nav-adultos")
         }
         
-        # CATEGORIAS QUE PERTENCEM AO DROPDOWN
         sub_categorias = ["filmes", "series", "animes", "adultos"]
 
         def renderizar_videos(categoria_filtro='todos'):
             if categoria_filtro == 'todos':
                 videos_para_mostrar = videos
-                titulo_categoria.write("Todos os Vídeos")
+                # CORREÇÃO: Usamos .innerText para alterar o texto
+                titulo_categoria.innerText = "Todos os Vídeos"
             else:
                 videos_para_mostrar = [v for v in videos if v['categoria'] == categoria_filtro]
-                titulo_categoria.write(categoria_filtro.capitalize())
+                titulo_categoria.innerText = categoria_filtro.capitalize()
 
-            # LÓGICA ATUALIZADA PARA O LINK ATIVO
+            # CORREÇÃO: Usamos .classList.remove() e .classList.add() para as classes CSS
             for cat, link in nav_links.items():
-                link.remove_class("active")
+                if link: # Garante que o link existe antes de tentar modificar
+                    link.classList.remove("active")
             
             if categoria_filtro in sub_categorias:
-                # Se for uma subcategoria, ativa ela E o pai 'Categorias'
-                nav_links["categorias"].add_class("active")
+                nav_links["categorias"].classList.add("active")
             elif categoria_filtro in nav_links:
-                # Caso contrário, ativa apenas o link clicado (ex: 'Início')
-                nav_links[categoria_filtro].add_class("active")
+                nav_links[categoria_filtro].classList.add("active")
 
             html_videos = ""
             if not videos_para_mostrar:
@@ -190,15 +59,10 @@
             
             display(HTML(html_videos), target="video-list")
 
-        # NOVA FUNÇÃO (PLACEHOLDER) PARA QUANDO UM VÍDEO FOR CLICADO
         def tocar_video(id):
             print(f"Vídeo com ID {id} foi clicado! A lógica para tocar o vídeo viria aqui.")
-            # No futuro, isso pode mudar a tela para um player de vídeo.
-            titulo_categoria.write(f"Tocando vídeo ID: {id}")
-            display("", target="video-list") # Limpa a lista de vídeos
+            titulo_categoria.innerText = f"Tocando vídeo ID: {id}"
+            display("", target="video-list") 
 
         renderizar_videos()
     </py-script>
-
-</body>
-</html>
