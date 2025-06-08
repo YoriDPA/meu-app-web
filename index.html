@@ -54,12 +54,12 @@
             text-decoration: none;
             font-size: 1rem;
             transition: color 0.3s;
-            /* LINHA ADICIONADA */
             text-transform: uppercase;
+            cursor: pointer; /* Adicionado para indicar que é clicável */
         }
 
-        .main-nav a:hover {
-            color: #007bff;
+        .main-nav a:hover, .main-nav a.active { /* Adicionada a classe .active */
+            color: #007bff; /* Destaca o link ativo ou no hover */
         }
 
         .main-content {
@@ -120,10 +120,11 @@
             <div class="logo">Mineiro</div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="#">Início</a></li>
-                    <li><a href="#">Categorias</a></li>
-                    <li><a href="#">Favoritos</a></li>
-                    <li><a href="#">Sobre</a></li>
+                    <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
+                    <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
+                    <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
+                    <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
+                    <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
                 </ul>
             </nav>
         </div>
@@ -131,7 +132,7 @@
 
     <main class="main-content">
         <div class="container">
-            <h1>Vídeos em Destaque</h1>
+            <h1 id="titulo-categoria">Todos os Vídeos</h1>
             
             <div id="video-list" class="video-grid">
                 </div>
@@ -146,30 +147,61 @@
     </footer>
 
     <py-script>
-        from pyscript import display, HTML
+        from pyscript import display, HTML, Element
 
+        # 1. ATUALIZAMOS OS DADOS para incluir uma 'categoria' para cada vídeo.
+        # As categorias estão em minúsculo para facilitar a filtragem.
         videos = [
-            { "id": 1, "title": "Explorando a Natureza Selvagem", "thumbnail": "https://picsum.photos/seed/nature/300/200" },
-            { "id": 2, "title": "A Corrida das Grandes Cidades", "thumbnail": "https://picsum.photos/seed/city/300/200" },
-            { "id": 3, "title": "Tecnologia do Futuro, Hoje", "thumbnail": "https://picsum.photos/seed/tech/300/200" },
-            { "id": 4, "title": "Receitas Rápidas para o Dia a Dia", "thumbnail": "https://picsum.photos/seed/food/300/200" },
-            { "id": 5, "title": "Viagem Espacial: A Fronteira Final", "thumbnail": "https://picsum.photos/seed/space/300/200" },
-            { "id": 6, "title": "Mistérios do Oceano Profundo", "thumbnail": "https://picsum.photos/seed/ocean/300/200" },
-            { "id": 7, "title": "Arquitetura Moderna pelo Mundo", "thumbnail": "https://picsum.photos/seed/architecture/300/200" },
-            { "id": 8, "title": "Show de Luzes e Cores", "thumbnail": "https://picsum.photos/seed/lights/300/200" },
+            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
+            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series" },
+            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes" },
+            { "id": 4, "title": "Pulp Fiction", "thumbnail": "https://picsum.photos/seed/pulpfiction/300/200", "categoria": "filmes" },
+            { "id": 5, "title": "Game of Thrones", "thumbnail": "https://picsum.photos/seed/got/300/200", "categoria": "series" },
+            { "id": 6, "title": "Um Filme Adulto Genérico", "thumbnail": "https://picsum.photos/seed/adult/300/200", "categoria": "adultos" },
+            { "id": 7, "title": "Death Note", "thumbnail": "https://picsum.photos/seed/deathnote/300/200", "categoria": "animes" },
+            { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
         ]
 
-        def renderizar_videos():
+        # Elementos da página que vamos manipular
+        titulo_categoria = Element("titulo-categoria")
+        nav_links = {
+            "todos": Element("nav-todos"), "filmes": Element("nav-filmes"),
+            "series": Element("nav-series"), "animes": Element("nav-animes"),
+            "adultos": Element("nav-adultos")
+        }
+
+        # 2. ATUALIZAMOS A FUNÇÃO para aceitar um filtro de categoria.
+        def renderizar_videos(categoria_filtro='todos'):
+            # Filtra a lista de vídeos
+            if categoria_filtro == 'todos':
+                videos_para_mostrar = videos
+                titulo_categoria.write("Todos os Vídeos")
+            else:
+                videos_para_mostrar = [v for v in videos if v['categoria'] == categoria_filtro]
+                titulo_categoria.write(categoria_filtro.capitalize())
+
+            # Atualiza o link ativo no menu
+            for cat, link in nav_links.items():
+                link.remove_class("active")
+            if categoria_filtro in nav_links:
+                nav_links[categoria_filtro].add_class("active")
+
+            # Gera o HTML dos vídeos filtrados
             html_videos = ""
-            for video in videos:
-                html_videos += f"""
-                <div class="video-card">
-                    <img src="{video['thumbnail']}" alt="{video['title']}">
-                    <h3>{video['title']}</h3>
-                </div>
-                """
+            if not videos_para_mostrar:
+                html_videos = "<p>Nenhum vídeo encontrado nesta categoria.</p>"
+            else:
+                for video in videos_para_mostrar:
+                    html_videos += f"""
+                    <div class="video-card">
+                        <img src="{video['thumbnail']}" alt="{video['title']}">
+                        <h3>{video['title']}</h3>
+                    </div>
+                    """
+            
             display(HTML(html_videos), target="video-list")
 
+        # 3. CHAMADA INICIAL: Renderiza todos os vídeos quando a página carrega.
         renderizar_videos()
     </py-script>
 
