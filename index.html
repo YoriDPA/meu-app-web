@@ -1,114 +1,6 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mineiro</title>
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .app-header {
-            background-color: #1f1f1f;
-            padding: 1rem 0;
-            border-bottom: 1px solid #333;
-        }
-        .app-header .container { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .main-nav ul { list-style-type: none; display: flex; align-items: center; gap: 20px; }
-        .main-nav a {
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 1rem;
-            transition: color 0.3s;
-            text-transform: uppercase;
-            cursor: pointer;
-            display: block;
-            padding: 5px 0;
-        }
-        .main-nav a:hover, .main-nav a.active { color: #007bff; }
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            background-color: #2a2a2a;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
-            z-index: 1;
-            list-style-type: none;
-            border-radius: 4px;
-        }
-        .dropdown-content a { padding: 12px 16px; text-align: left; font-size: 0.9rem; }
-        .dropdown-content a:hover { background-color: #3c3c3c; }
-        .dropdown:hover .dropdown-content { display: block; }
-        .main-content { padding: 40px 0; }
-        .main-content h1 { margin-bottom: 20px; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .video-card {
-            background-color: #1f1f1f;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .video-card:hover { transform: scale(1.05); }
-        .video-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .video-card h3 { padding: 15px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .app-footer {
-            background-color: #1f1f1f;
-            text-align: center;
-            padding: 1.5rem 0;
-            margin-top: 40px;
-            border-top: 1px solid #333;
-            font-size: 0.9rem;
-        }
-    </style>
-</head>
-<body>
-
-    <header class="app-header">
-        <div class="container">
-            <div class="logo">Mineiro</div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
-                    <li class="dropdown">
-                        <a id="nav-categorias" href="javascript:void(0)">Categorias</a>
-                        <ul class="dropdown-content">
-                            <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
-                            <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
-                            <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
-                            <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-
-    <main class="main-content">
-        <div class="container">
-            <h1 id="titulo-categoria">Todos os Vídeos</h1>
-            <div id="video-list" class="video-grid"></div>
-        </div>
-    </main>
-
-    <footer class="app-footer">
-        <div class="container">
-            &copy; 2025 Mineiro. Todos os direitos reservados.
-        </div>
-    </footer>
-
-    <py-script>
+<py-script>
         from pyscript import display, HTML
-        import pyscript
+        from js import document # CORREÇÃO: Importamos o 'document' diretamente
 
         videos = [
             { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
@@ -121,14 +13,15 @@
             { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
         ]
 
-        titulo_categoria = pyscript.js.document.getElementById("titulo-categoria")
+        # CORREÇÃO: Usamos o 'document' importado diretamente
+        titulo_categoria = document.getElementById("titulo-categoria")
         nav_links = {
-            "todos": pyscript.js.document.getElementById("nav-todos"),
-            "categorias": pyscript.js.document.getElementById("nav-categorias"),
-            "filmes": pyscript.js.document.getElementById("nav-filmes"),
-            "series": pyscript.js.document.getElementById("nav-series"),
-            "animes": pyscript.js.document.getElementById("nav-animes"),
-            "adultos": pyscript.js.document.getElementById("nav-adultos")
+            "todos": document.getElementById("nav-todos"),
+            "categorias": document.getElementById("nav-categorias"),
+            "filmes": document.getElementById("nav-filmes"),
+            "series": document.getElementById("nav-series"),
+            "animes": document.getElementById("nav-animes"),
+            "adultos": document.getElementById("nav-adultos")
         }
         
         sub_categorias = ["filmes", "series", "animes", "adultos"]
@@ -167,10 +60,7 @@
         def tocar_video(id):
             print(f"Vídeo com ID {id} foi clicado! A lógica para tocar o vídeo viria aqui.")
             titulo_categoria.innerText = f"Tocando vídeo ID: {id}"
-            display("", target="video-list") 
+            display("", target="video-list")
 
         renderizar_videos()
     </py-script>
-
-</body>
-</html>
