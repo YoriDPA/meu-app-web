@@ -8,74 +8,74 @@
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #121212;
             color: #ffffff;
         }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
         .app-header {
             background-color: #1f1f1f;
             padding: 1rem 0;
             border-bottom: 1px solid #333;
         }
-
-        .app-header .container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .main-nav ul {
-            list-style-type: none;
-            display: flex;
-            gap: 20px;
-        }
-
+        .app-header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; }
+        .main-nav ul { list-style-type: none; display: flex; align-items: center; gap: 20px; }
         .main-nav a {
             color: #ffffff;
             text-decoration: none;
             font-size: 1rem;
             transition: color 0.3s;
             text-transform: uppercase;
-            cursor: pointer; /* Adicionado para indicar que é clicável */
+            cursor: pointer;
+            display: block; /* Garante que o link ocupe todo o espaço do li */
+            padding: 5px 0; /* Pequeno ajuste de espaçamento */
+        }
+        .main-nav a:hover, .main-nav a.active { color: #007bff; }
+
+        /* --- INÍCIO DOS ESTILOS DO DROPDOWN --- */
+        
+        /* O container do item de menu que terá o dropdown */
+        .dropdown {
+            position: relative; /* Essencial para posicionar o menu dropdown abaixo dele */
+            display: inline-block;
         }
 
-        .main-nav a:hover, .main-nav a.active { /* Adicionada a classe .active */
-            color: #007bff; /* Destaca o link ativo ou no hover */
+        /* O conteúdo do dropdown (a lista <ul> aninhada) */
+        .dropdown-content {
+            display: none; /* Escondido por padrão */
+            position: absolute; /* Posicionado em relação ao .dropdown */
+            background-color: #2a2a2a; /* Cor de fundo do dropdown */
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5);
+            z-index: 1; /* Garante que o dropdown fique na frente de outros elementos */
+            list-style-type: none; /* Remove bolinhas da sub-lista */
+            border-radius: 4px; /* Cantos arredondados */
         }
 
-        .main-content {
-            padding: 40px 0;
+        /* Links dentro do dropdown */
+        .dropdown-content a {
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.9rem; /* Fonte um pouco menor */
+        }
+
+        .dropdown-content a:hover {
+            background-color: #3c3c3c; /* Fundo do item ao passar o mouse */
+        }
+
+        /* A MÁGICA: Mostra o dropdown quando o mouse passa por cima do .dropdown */
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
         
-        .main-content h1 {
-            margin-bottom: 20px;
-        }
-        
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
+        /* --- FIM DOS ESTILOS DO DROPDOWN --- */
 
+        .main-content { padding: 40px 0; }
+        .main-content h1 { margin-bottom: 20px; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .video-card {
             background-color: #1f1f1f;
             border-radius: 8px;
@@ -83,26 +83,9 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        
-        .video-card:hover {
-            transform: scale(1.05);
-        }
-
-        .video-card img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .video-card h3 {
-            padding: 15px;
-            font-size: 1rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
+        .video-card:hover { transform: scale(1.05); }
+        .video-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .video-card h3 { padding: 15px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .app-footer {
             background-color: #1f1f1f;
             text-align: center;
@@ -121,10 +104,16 @@
             <nav class="main-nav">
                 <ul>
                     <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
-                    <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
-                    <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
-                    <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
-                    <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
+                    
+                    <li class="dropdown">
+                        <a id="nav-categorias" href="javascript:void(0)">Categorias</a>
+                        <ul class="dropdown-content">
+                            <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
+                            <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
+                            <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
+                            <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -133,10 +122,7 @@
     <main class="main-content">
         <div class="container">
             <h1 id="titulo-categoria">Todos os Vídeos</h1>
-            
-            <div id="video-list" class="video-grid">
-                </div>
-
+            <div id="video-list" class="video-grid"></div>
         </div>
     </main>
 
@@ -149,8 +135,6 @@
     <py-script>
         from pyscript import display, HTML, Element
 
-        # 1. ATUALIZAMOS OS DADOS para incluir uma 'categoria' para cada vídeo.
-        # As categorias estão em minúsculo para facilitar a filtragem.
         videos = [
             { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
             { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series" },
@@ -162,17 +146,18 @@
             { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
         ]
 
-        # Elementos da página que vamos manipular
+        # PEQUENA MUDANÇA AQUI PARA INCLUIR O LINK 'CATEGORIAS'
         titulo_categoria = Element("titulo-categoria")
         nav_links = {
-            "todos": Element("nav-todos"), "filmes": Element("nav-filmes"),
-            "series": Element("nav-series"), "animes": Element("nav-animes"),
-            "adultos": Element("nav-adultos")
+            "todos": Element("nav-todos"), "categorias": Element("nav-categorias"),
+            "filmes": Element("nav-filmes"), "series": Element("nav-series"),
+            "animes": Element("nav-animes"), "adultos": Element("nav-adultos")
         }
+        
+        # CATEGORIAS QUE PERTENCEM AO DROPDOWN
+        sub_categorias = ["filmes", "series", "animes", "adultos"]
 
-        # 2. ATUALIZAMOS A FUNÇÃO para aceitar um filtro de categoria.
         def renderizar_videos(categoria_filtro='todos'):
-            # Filtra a lista de vídeos
             if categoria_filtro == 'todos':
                 videos_para_mostrar = videos
                 titulo_categoria.write("Todos os Vídeos")
@@ -180,20 +165,24 @@
                 videos_para_mostrar = [v for v in videos if v['categoria'] == categoria_filtro]
                 titulo_categoria.write(categoria_filtro.capitalize())
 
-            # Atualiza o link ativo no menu
+            # LÓGICA ATUALIZADA PARA O LINK ATIVO
             for cat, link in nav_links.items():
                 link.remove_class("active")
-            if categoria_filtro in nav_links:
+            
+            if categoria_filtro in sub_categorias:
+                # Se for uma subcategoria, ativa ela E o pai 'Categorias'
+                nav_links["categorias"].add_class("active")
+            elif categoria_filtro in nav_links:
+                # Caso contrário, ativa apenas o link clicado (ex: 'Início')
                 nav_links[categoria_filtro].add_class("active")
 
-            # Gera o HTML dos vídeos filtrados
             html_videos = ""
             if not videos_para_mostrar:
                 html_videos = "<p>Nenhum vídeo encontrado nesta categoria.</p>"
             else:
                 for video in videos_para_mostrar:
                     html_videos += f"""
-                    <div class="video-card">
+                    <div class="video-card" py-click="lambda e, id={video['id']}: tocar_video(id)">
                         <img src="{video['thumbnail']}" alt="{video['title']}">
                         <h3>{video['title']}</h3>
                     </div>
@@ -201,7 +190,13 @@
             
             display(HTML(html_videos), target="video-list")
 
-        # 3. CHAMADA INICIAL: Renderiza todos os vídeos quando a página carrega.
+        # NOVA FUNÇÃO (PLACEHOLDER) PARA QUANDO UM VÍDEO FOR CLICADO
+        def tocar_video(id):
+            print(f"Vídeo com ID {id} foi clicado! A lógica para tocar o vídeo viria aqui.")
+            # No futuro, isso pode mudar a tela para um player de vídeo.
+            titulo_categoria.write(f"Tocando vídeo ID: {id}")
+            display("", target="video-list") # Limpa a lista de vídeos
+
         renderizar_videos()
     </py-script>
 
