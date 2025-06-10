@@ -1,6 +1,36 @@
-<py-script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyScript App</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+</head>
+<body>
+    <div id="app">
+        <nav>
+            <h1 id="titulo-categoria"></h1>
+            <ul>
+                <li><a href="#" id="nav-todos" py-click="renderizar_videos('todos')">Todos</a></li>
+                <li><a href="#" id="nav-categorias">Categorias</a>
+                    <ul>
+                        <li><a href="#" id="nav-filmes" py-click="renderizar_videos('filmes')">Filmes</a></li>
+                        <li><a href="#" id="nav-series" py-click="renderizar_videos('series')">Séries</a></li>
+                        <li><a href="#" id="nav-animes" py-click="renderizar_videos('animes')">Animes</a></li>
+                        <li><a href="#" id="nav-adultos" py-click="renderizar_videos('adultos')">Adultos</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+        <div id="video-list" class="video-grid">
+            </div>
+    </div>
+
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+    <py-script>
         from pyscript import display, HTML
-        from js import document # CORREÇÃO: Importamos o 'document' diretamente
+        from js import document
 
         videos = [
             { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
@@ -13,7 +43,6 @@
             { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
         ]
 
-        # CORREÇÃO: Usamos o 'document' importado diretamente
         titulo_categoria = document.getElementById("titulo-categoria")
         nav_links = {
             "todos": document.getElementById("nav-todos"),
@@ -64,3 +93,64 @@
 
         renderizar_videos()
     </py-script>
+    <style>
+        /* Apenas um CSS básico para os cards */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .video-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+        .video-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        .video-card h3 {
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+        }
+        nav {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 15px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+        nav ul li a:hover, nav ul li a.active {
+            background-color: #ddd;
+        }
+        nav #titulo-categoria {
+            margin-right: auto;
+            font-size: 1.5em;
+        }
+    </style>
+</body>
+</html>
