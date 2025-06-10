@@ -39,7 +39,6 @@
             position: relative; /* Para posicionar o botão de play */
             display: flex;
             flex-direction: column;
-            /* cursor: pointer; */ /* O cursor será no play-overlay agora */
         }
         .video-card:hover { transform: scale(1.05); }
         .video-card img { 
@@ -105,7 +104,7 @@
             border-color: red;
         }
 
-        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5%5; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
+        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
         .back-button:hover { background-color: #0056b3; }
         .video-iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-top: 20px; }
         .video-iframe-container iframe, .video-iframe-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background-color: black; }
@@ -120,6 +119,7 @@
         .admin-form-container { max-width: 700px; margin: 0 auto; }
         .form-group { margin-bottom: 1.2rem; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        /* Aumentar a largura da textarea para a URL M3U */
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 5px; font-size: 1rem; }
         .form-group textarea { min-height: 100px; resize: vertical; }
         .submit-button { width: 100%; padding: 12px; background-color: #007bff; border: none; color: white; font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
@@ -144,6 +144,7 @@
                         </ul>
                     </li>
                     <li><a id="nav-aovivo" py-click="mostrar_canal_ao_vivo">Ao Vivo</a></li>
+                    <li><a id="nav-m3u-input" py-click="mostrar_form_m3u_input">Reproduzir M3U</a></li> 
                 </ul>
             </nav>
         </div>
@@ -164,16 +165,16 @@
         import re
 
         videos = [
-            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I18", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I19" },
-            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I20", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I21" },
-            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I22", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I23" }
+            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/V75dMMIW2B4" },
+            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/HhF0_L9V_3A" },
+            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/MGRm4IzK1ZQ" }
         ]
         
         nav_links = {
             "todos": document.getElementById("nav-todos"), "categorias": document.getElementById("nav-categorias"),
             "filmes": document.getElementById("nav-filmes"), "series": document.getElementById("nav-series"),
             "animes": document.getElementById("nav-animes"), "adultos": document.getElementById("nav-adultos"),
-            "aovivo": document.getElementById("nav-aovivo")
+            "aovivo": document.getElementById("nav-aovivo"), "m3u-input": document.getElementById("nav-m3u-input") # Novo link
         }
         sub_categorias = ["filmes", "series", "animes", "adultos"]
         
@@ -221,10 +222,10 @@
             except Exception as e:
                 display(f"<p style='color:red;'>Erro ao carregar a lista de canais: {e}</p>", target="main-view", append=False)
 
-        def tocar_canal_m3u(stream_url, channel_name):
+        def tocar_canal_m3u(stream_url, channel_name="Stream M3U"): # Adicionado channel_name padrão
             player_html = f"""
             <div>
-                <button class="back-button" py-click="mostrar_canal_ao_vivo">← Voltar para a Lista de Canais</button>
+                <button class="back-button" py-click="mostrar_form_m3u_input">← Voltar</button>
                 <h1>{channel_name}</h1>
                 <div class="video-iframe-container">
                     <video id="live-player" controls autoplay></video>
@@ -238,6 +239,7 @@
                 hls.loadSource(stream_url)
                 hls.attachMedia(video_element)
             else:
+                alert("HLS não é suportado neste navegador ou o stream não é HLS.")
                 print("HLS não é suportado neste navegador.")
 
         def renderizar_videos(categoria_filtro='todos'):
@@ -284,13 +286,11 @@
             """
             display(HTML(player_html), target="main-view", append=False)
 
-        # Função para extrair thumbnail do YouTube
         def get_youtube_thumbnail(video_url):
             match = re.search(r'(?:https?://)?(?:www\.)?(?:youtube\.com|youtu\.be)/(?:watch\?v=|embed/|v/|)([a-zA-Z0-9_-]{11})', video_url)
             if match:
                 video_id = match.group(1)
-                # hqdefault.jpg é uma boa qualidade padrão
-                return f"https://www.youtube.com/embed/8n1hAT_gW8I24{video_id}/hqdefault.jpg"
+                return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
             return ""
 
         def mostrar_formulario_admin(event=None):
@@ -305,7 +305,7 @@
                 </div>
                 <div class="form-group">
                     <label for="video-url">URL do Vídeo (Embed)</label>
-                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/8n1hAT_gW8I25">
+                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/V75dMMIW2B4">
                     <small>Se for YouTube, a capa será gerada automaticamente.</small>
                 </div>
                 <div class="form-group">
@@ -359,14 +359,40 @@
             alert("Vídeo adicionado com sucesso!")
             renderizar_videos()
 
-        # Atualizando os vídeos iniciais para usar URLs do YouTube de exemplo reais
-        videos[0]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I19" 
+        # --- Nova Seção: Reproduzir M3U por Input ---
+        def mostrar_form_m3u_input(event=None):
+            gerenciar_link_ativo("m3u-input") # Define o link "Reproduzir M3U" como ativo
+            form_m3u_html = """
+            <div class="admin-form-container">
+                <h1>Reproduzir Stream M3U/HLS</h1>
+                <p>Cole a URL do stream M3U/HLS que deseja reproduzir. Ex: `https://seu-servidor.com/stream.m3u8`</p>
+                <div class="form-group">
+                    <label for="m3u-url-input">URL do Stream M3U/HLS</label>
+                    <input type="text" id="m3u-url-input" placeholder="https://exemplo.com/seu-stream.m3u8" style="width: 100%;">
+                </div>
+                <button class="submit-button" py-click="reproduzir_m3u_input">Reproduzir Stream</button>
+            </div>
+            """
+            display(HTML(form_m3u_html), target="main-view", append=False)
+
+        def reproduzir_m3u_input(event=None):
+            stream_url = document.getElementById("m3u-url-input").value
+            if not stream_url:
+                alert("Por favor, insira uma URL de stream M3U/HLS!")
+                return
+            
+            # Usar a função existente tocar_canal_m3u
+            tocar_canal_m3u(stream_url, "Stream do Usuário")
+
+        # Ajustando os vídeos iniciais para usar URLs do YouTube de exemplo reais
+        # e gerar as thumbnails no carregamento
+        videos[0]["embed_url"] = "https://www.youtube.com/embed/V75dMMIW2B4" 
         videos[0]["thumbnail"] = get_youtube_thumbnail(videos[0]["embed_url"]) or "https://picsum.photos/seed/lotr/300/200"
 
-        videos[1]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I21" 
+        videos[1]["embed_url"] = "https://www.youtube.com/embed/HhF0_L9V_3A" 
         videos[1]["thumbnail"] = get_youtube_thumbnail(videos[1]["embed_url"]) or "https://picsum.photos/seed/breakingbad/300/200"
 
-        videos[2]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I23" 
+        videos[2]["embed_url"] = "https://www.youtube.com/embed/MGRm4IzK1ZQ" 
         videos[2]["thumbnail"] = get_youtube_thumbnail(videos[2]["embed_url"]) or "https://picsum.photos/seed/aot/300/200"
 
         renderizar_videos()
