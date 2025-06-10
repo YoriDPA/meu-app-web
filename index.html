@@ -1,176 +1,343 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" data-bs-theme="dark">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mineiro</title>
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <py-config>
-        [[fetch]]
-        files = ["./minha_lista.m3u"]
-    </py-config>
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregador de Notícias com IA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* CSS existente... */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-        .app-header { background-color: #1f1f1f; padding: 1rem 0; border-bottom: 1px solid #333; }
-        .app-header .container { display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 1.5rem; font-weight: bold; }
-        .main-nav ul { list-style-type: none; display: flex; align-items: center; gap: 20px; }
-        .main-nav a { color: #ffffff; text-decoration: none; font-size: 1rem; transition: color 0.3s; text-transform: uppercase; cursor: pointer; display: block; padding: 5px 0; }
-        .main-nav a:hover, .main-nav a.active { color: #007bff; }
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content { display: none; position: absolute; background-color: #2a2a2a; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 1; list-style-type: none; border-radius: 4px; }
-        .dropdown-content a { padding: 12px 16px; text-align: left; font-size: 0.9rem; }
-        .dropdown-content a:hover { background-color: #3c3c3c; }
-        .dropdown:hover .dropdown-content { display: block; }
-        .main-content { padding: 40px 0; min-height: 60vh; }
-        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .video-card { background-color: #1f1f1f; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
-        .video-card:hover { transform: scale(1.05); }
-        .video-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .video-card h3 { padding: 15px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
-        .back-button:hover { background-color: #0056b3; }
-        .video-iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-top: 20px; }
-        .video-iframe-container iframe, .video-iframe-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background-color: black; }
-        .video-details { margin-top: 20px; }
-        .video-details p { font-size: 1rem; line-height: 1.6; color: #ccc; }
-        .channel-list { list-style: none; padding: 0; }
-        .channel-list-item { background-color: #1f1f1f; padding: 15px; border-bottom: 1px solid #333; cursor: pointer; transition: background-color 0.2s; }
-        .channel-list-item:hover { background-color: #2a2a2a; }
-        .app-footer { background-color: #1f1f1f; text-align: center; padding: 1.5rem 0; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9rem; }
-        .app-footer a { color: #007bff; text-decoration: none; cursor: pointer; }
-        .app-footer a:hover { text-decoration: underline; }
-        .admin-form-container { max-width: 700px; margin: 0 auto; }
-        .form-group { margin-bottom: 1.2rem; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 5px; font-size: 1rem; }
-        .form-group textarea { min-height: 100px; resize: vertical; }
-        
-        /* --- ESTILOS PARA FORMULÁRIO DE BUSCA E BOTÃO --- */
-        .search-container { max-width: 700px; margin: 40px auto; text-align: center; }
-        .search-input {
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card-img-top {
             width: 100%;
-            padding: 12px;
-            font-size: 1.2rem;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            height: 200px;
+            object-fit: cover;
         }
-        .submit-button {
-            padding: 12px 30px;
-            background-color: #007bff;
-            border: none;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.2s;
+        .loading-spinner {
+            display: none; /* Oculto por padrão */
+            margin: 2rem auto;
         }
-        .submit-button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
-
-    <header class="app-header">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
         <div class="container">
-            <div class="logo">Mineiro</div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
-                    <li class="dropdown">
-                        <a id="nav-categorias" href="javascript:void(0)">Categorias</a>
-                        <ul class="dropdown-content">
-                            <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
-                            <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
-                            <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
-                            <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
-                        </ul>
-                    </li>
-                    <li><a id="nav-noticias" py-click="mostrar_pagina_noticias">Notícias</a></li>
-                    <li><a id="nav-aovivo" py-click="mostrar_canal_ao_vivo">Ao Vivo</a></li>
-                </ul>
-            </nav>
+            <a class="navbar-brand" href="#">📰 AI News Feed</a>
         </div>
-    </header>
+    </nav>
 
-    <main id="main-view" class="container main-content"></main>
-
-    <footer class="app-footer">
-        <div class="container">
-            © 2025 Mineiro. Todos os direitos reservados. | 
-            <a id="admin-link" py-click="mostrar_formulario_admin">Adicionar Vídeo</a>
-        </div>
-    </footer>
-
-    <py-script>
-        from pyscript import display, HTML, pyfetch
-        from js import document, Hls, alert
-        import re
-
-        # (Código de dados de vídeos, etc., continua o mesmo)
-        videos = []
-        
-        # ATUALIZAÇÃO NO DICIONÁRIO DE LINKS
-        nav_links = {
-            "todos": document.getElementById("nav-todos"), "categorias": document.getElementById("nav-categorias"),
-            "filmes": document.getElementById("nav-filmes"), "series": document.getElementById("nav-series"),
-            "animes": document.getElementById("nav-animes"), "adultos": document.getElementById("nav-adultos"),
-            "noticias": document.getElementById("nav-noticias"), # NOVO
-            "aovivo": document.getElementById("nav-aovivo")
-        }
-        sub_categorias = ["filmes", "series", "animes", "adultos"]
-        
-        ultima_categoria_vista = 'todos'
-
-        # (Funções gerenciar_link_ativo, parse_m3u, etc. continuam as mesmas)
-        def gerenciar_link_ativo(link_ativo):
-            for link in nav_links.values():
-                if link: link.classList.remove("active")
-            if link_ativo is None: return
-            elif link_ativo in sub_categorias: nav_links["categorias"].classList.add("active")
-            elif link_ativo in nav_links: nav_links[link_ativo].classList.add("active")
-
-        # --- NOVAS FUNÇÕES PARA A PÁGINA DE NOTÍCIAS ---
-        
-        def mostrar_pagina_noticias(event=None):
-            gerenciar_link_ativo("noticias")
-            search_html = """
-            <div class="search-container">
-                <h1>Pesquisar Notícias Atuais</h1>
-                <p style="margin-bottom: 20px;">Digite um tópico e a IA buscará uma notícia e criará uma representação visual.</p>
-                <input type="text" id="news-search-input" class="search-input" placeholder="Ex: Lançamentos da NASA">
-                <button class="submit-button" py-click="buscar_noticias">Buscar Notícia</button>
+    <main class="container my-4">
+        <section id="search-section" class="mb-5 p-4 bg-body-tertiary rounded-3">
+            <h2>1. Buscar Notícias com IA</h2>
+            <p>Digite um tópico para buscar notícias e resumi-las usando Inteligência Artificial.</p>
+            <form id="search-form">
+                <div class="input-group">
+                    <input type="text" id="search-query" class="form-control" placeholder="Ex: tecnologia, Brasil, finanças..." required>
+                    <button class="btn btn-primary" type="submit">Buscar e Resumir</button>
+                </div>
+            </form>
+            <div class="spinner-border text-primary mt-3 loading-spinner" id="search-spinner" role="status">
+                <span class="visually-hidden">Buscando...</span>
             </div>
-            """
-            display(HTML(search_html), target="main-view", append=False)
+        </section>
 
-        async def buscar_noticias(event=None):
-            # No próximo passo, vamos implementar a busca real com IA aqui.
-            # Por enquanto, apenas mostra um alerta.
-            input_element = document.getElementById("news-search-input")
-            query = input_element.value
-            if not query:
-                alert("Por favor, digite um tópico para pesquisar.")
-                return
-            
-            alert(f"Busca iniciada para: '{query}'. A mágica da IA acontecerá aqui no próximo passo!")
-            # AQUI CHAMAREMOS O Google Search, YOUTUBE, ETC.
+        <section id="results-section" class="mb-5">
+            <h3 class="border-bottom pb-2 mb-3">Resultados da Busca</h3>
+            <div id="news-results" class="row g-4">
+                </div>
+        </section>
+
+        <hr>
+
+        <section id="posts-section" class="mt-5">
+            <h2 class="border-bottom pb-2 mb-3">2. Suas Postagens</h2>
+            <div id="saved-posts" class="row g-4">
+                </div>
+        </section>
+    </main>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="editModalLabel">Editar Postagem</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-form">
+                <input type="hidden" id="edit-post-id">
+                <div class="mb-3">
+                    <label for="edit-title" class="form-label">Título</label>
+                    <input type="text" class="form-control" id="edit-title" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit-content" class="form-label">Conteúdo (Resumo IA)</label>
+                    <textarea class="form-control" id="edit-content" rows="6" required></textarea>
+                </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="save-edit-button">Salvar Alterações</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // --- CONFIGURAÇÕES ---
+        const GNEWS_API_KEY = "SUA_CHAVE_API_GNEWS";
+        const GEMINI_API_KEY = "SUA_CHAVE_API_GEMINI";
+        const LOCAL_API_URL = "http://localhost:3000/posts"; // URL do seu json-server
+
+        // --- ELEMENTOS DO DOM ---
+        const searchForm = document.getElementById('search-form');
+        const searchSpinner = document.getElementById('search-spinner');
+        const newsResultsContainer = document.getElementById('news-results');
+        const savedPostsContainer = document.getElementById('saved-posts');
+        const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+        const editForm = document.getElementById('edit-form');
+        const saveEditButton = document.getElementById('save-edit-button');
+
+
+        // --- FUNÇÕES DA API ---
+
+        /**
+         * Busca notícias na GNews.
+         */
+        async function fetchNews(query) {
+            const url = `https://gnews.io/api/v4/search?q=${encodeURIComponent(query)}&lang=pt&country=br&max=6&apikey=${GNEWS_API_KEY}`;
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Erro na GNews: ${response.statusText}`);
+                const data = await response.json();
+                return data.articles;
+            } catch (error) {
+                console.error(error);
+                alert("Falha ao buscar notícias. Verifique sua chave da GNews.");
+                return [];
+            }
+        }
+
+        /**
+         * Resume um texto usando a IA do Google (Gemini).
+         */
+        async function summarizeWithAI(content) {
+             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+             try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: `Resuma a seguinte notícia em um parágrafo conciso em português: "${content}"` }]
+                        }]
+                    })
+                });
+                if (!response.ok) throw new Error(`Erro na API Gemini: ${response.statusText}`);
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error(error);
+                alert("Falha ao resumir com IA. Verifique sua chave do Gemini ou o conteúdo enviado.");
+                return "Não foi possível gerar um resumo.";
+            }
+        }
+
+        /**
+         * Busca os posts salvos no nosso backend (json-server).
+         */
+        async function fetchSavedPosts() {
+            try {
+                const response = await fetch(LOCAL_API_URL);
+                const posts = await response.json();
+                renderSavedPosts(posts);
+            } catch (error) {
+                console.error("Erro ao buscar posts salvos:", error);
+                alert("Não foi possível carregar os posts. Verifique se o json-server está rodando.");
+            }
+        }
+
+        // --- FUNÇÕES DE RENDERIZAÇÃO E MANIPULAÇÃO ---
+
+        /**
+         * Renderiza os resultados da busca de notícias na tela.
+         */
+        function renderNewsResults(articles) {
+            newsResultsContainer.innerHTML = ''; // Limpa resultados anteriores
+            if (articles.length === 0) {
+                newsResultsContainer.innerHTML = '<p class="text-center">Nenhum resultado encontrado.</p>';
+                return;
+            }
+
+            articles.forEach(article => {
+                const card = document.createElement('div');
+                card.className = 'col-md-4';
+                card.innerHTML = `
+                    <div class="card h-100">
+                        <img src="${article.image || 'https://via.placeholder.com/400x200.png?text=Sem+Imagem'}" class="card-img-top" alt="${article.title}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${article.title}</h5>
+                            <p class="card-text flex-grow-1">${article.description}</p>
+                            <button class="btn btn-success post-button mt-auto">Postar com Resumo IA</button>
+                        </div>
+                    </div>
+                `;
+                // Adiciona o evento de clique para postar
+                card.querySelector('.post-button').addEventListener('click', async (e) => {
+                    const button = e.target;
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Resumindo...';
+                    
+                    const summary = await summarizeWithAI(article.content || article.description);
+
+                    const newPost = {
+                        title: article.title,
+                        content: summary,
+                        originalUrl: article.url,
+                        imageUrl: article.image
+                    };
+
+                    try {
+                        await fetch(LOCAL_API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(newPost)
+                        });
+                        fetchSavedPosts(); // Recarrega a lista de posts salvos
+                    } catch (error) {
+                        console.error("Erro ao postar:", error);
+                        alert("Falha ao salvar a postagem.");
+                    } finally {
+                         button.disabled = false;
+                         button.textContent = 'Postar com Resumo IA';
+                    }
+                });
+                newsResultsContainer.appendChild(card);
+            });
+        }
         
-        # (O resto das suas funções: renderizar_videos, tocar_video, etc. continuam aqui)
-        # ...
+        /**
+         * Renderiza os posts salvos na tela.
+         */
+        function renderSavedPosts(posts) {
+            savedPostsContainer.innerHTML = '';
+            if (posts.length === 0) {
+                savedPostsContainer.innerHTML = '<p class="text-center">Você ainda não tem nenhuma postagem salva.</p>';
+                return;
+            }
 
-        # Inicia a aplicação
-        renderizar_videos()
-    </py-script>
+            posts.slice().reverse().forEach(post => { // .slice().reverse() para mostrar os mais recentes primeiro
+                const postCard = document.createElement('div');
+                postCard.className = 'col-md-6';
+                postCard.innerHTML = `
+                    <div class="card h-100">
+                         <img src="${post.imageUrl || 'https://via.placeholder.com/400x200.png?text=Sem+Imagem'}" class="card-img-top" alt="${post.title}">
+                        <div class="card-body">
+                            <h5 class="card-title">${post.title}</h5>
+                            <p class="card-text">${post.content}</p>
+                        </div>
+                        <div class="card-footer">
+                            <a href="${post.originalUrl}" target="_blank" class="btn btn-sm btn-outline-secondary">Ver Original</a>
+                            <button class="btn btn-sm btn-outline-primary edit-button" data-id="${post.id}">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger delete-button" data-id="${post.id}">Apagar</button>
+                        </div>
+                    </div>
+                `;
+                savedPostsContainer.appendChild(postCard);
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
 
+        /**
+         * Listener para o formulário de busca.
+         */
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('search-query').value;
+            if (!query) return;
+
+            searchSpinner.style.display = 'block';
+            newsResultsContainer.innerHTML = '';
+            
+            const articles = await fetchNews(query);
+            renderNewsResults(articles);
+            
+            searchSpinner.style.display = 'none';
+        });
+
+        /**
+         * Listeners para os botões de editar e apagar (usando delegação de eventos).
+         */
+        savedPostsContainer.addEventListener('click', async (e) => {
+            const target = e.target;
+            const postId = target.dataset.id;
+            if (!postId) return;
+
+            // Botão APAGAR
+            if (target.classList.contains('delete-button')) {
+                if (confirm('Tem certeza que deseja apagar esta postagem?')) {
+                    try {
+                        await fetch(`${LOCAL_API_URL}/${postId}`, { method: 'DELETE' });
+                        fetchSavedPosts(); // Recarrega os posts
+                    } catch (error) {
+                        console.error("Erro ao apagar:", error);
+                        alert("Falha ao apagar postagem.");
+                    }
+                }
+            }
+            
+            // Botão EDITAR
+            if (target.classList.contains('edit-button')) {
+                try {
+                    const response = await fetch(`${LOCAL_API_URL}/${postId}`);
+                    const post = await response.json();
+                    
+                    document.getElementById('edit-post-id').value = post.id;
+                    document.getElementById('edit-title').value = post.title;
+                    document.getElementById('edit-content').value = post.content;
+
+                    editModal.show();
+                } catch (error) {
+                    console.error("Erro ao carregar dados para edição:", error);
+                    alert("Falha ao carregar dados do post.");
+                }
+            }
+        });
+
+        /**
+         * Listener para o botão de salvar no modal de edição.
+         */
+        saveEditButton.addEventListener('click', async () => {
+            const postId = document.getElementById('edit-post-id').value;
+            const updatedPost = {
+                title: document.getElementById('edit-title').value,
+                content: document.getElementById('edit-content').value
+            };
+
+            try {
+                await fetch(`${LOCAL_API_URL}/${postId}`, {
+                    method: 'PATCH', // PATCH atualiza apenas os campos enviados
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedPost)
+                });
+                
+                editModal.hide();
+                fetchSavedPosts(); // Recarrega os posts
+            } catch(error) {
+                console.error("Erro ao salvar edição:", error);
+                alert("Falha ao salvar as alterações.");
+            }
+        });
+
+
+        // --- INICIALIZAÇÃO ---
+        // Carrega os posts salvos ao iniciar a página.
+        document.addEventListener('DOMContentLoaded', fetchSavedPosts);
+
+    </script>
 </body>
 </html>
