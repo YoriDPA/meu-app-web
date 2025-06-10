@@ -39,7 +39,7 @@
             position: relative; /* Para posicionar o botão de play */
             display: flex;
             flex-direction: column;
-            cursor: default; /* Remove o cursor de ponteiro do card em si */
+            /* cursor: pointer; */ /* O cursor será no play-overlay agora */
         }
         .video-card:hover { transform: scale(1.05); }
         .video-card img { 
@@ -57,31 +57,55 @@
             flex-grow: 1; /* Faz o título ocupar o espaço restante */
         }
 
-        /* Estilo para o botão de play */
-        .play-button {
+        /* Contêiner da imagem e botão de play */
+        .thumbnail-container {
+            position: relative;
+            width: 100%;
+            height: 150px; /* Mesma altura da imagem */
+            overflow: hidden;
+        }
+
+        /* Overlay para o botão de play */
+        .play-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Fundo semi-transparente */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            opacity: 0; /* Começa invisível */
+            transition: opacity 0.3s ease;
             cursor: pointer;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        .play-button:hover {
-            background-color: rgba(0, 0, 0, 0.9);
-            border-color: #007bff;
         }
 
-        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
+        .video-card:hover .play-overlay {
+            opacity: 1; /* Fica visível ao passar o mouse */
+        }
+        
+        /* Estilo para o ícone de play */
+        .play-overlay .play-icon {
+            font-size: 3rem; /* Tamanho do ícone */
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.6);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .play-overlay:hover .play-icon {
+            background-color: rgba(255, 0, 0, 0.8); /* Cor do YouTube ao hover */
+            border-color: red;
+        }
+
+        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5%5; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
         .back-button:hover { background-color: #0056b3; }
         .video-iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-top: 20px; }
         .video-iframe-container iframe, .video-iframe-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background-color: black; }
@@ -140,9 +164,9 @@
         import re
 
         videos = [
-            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I10", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I11" },
-            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I12", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I13" },
-            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I14", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I15" }
+            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I18", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I19" },
+            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I20", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I21" },
+            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://www.youtube.com/embed/8n1hAT_gW8I22", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I23" }
         ]
         
         nav_links = {
@@ -233,8 +257,12 @@
                 for video in videos_para_mostrar:
                     html_videos += f"""
                     <div class="video-card">
-                        <img src="{video['thumbnail']}" alt="{video['title']}">
-                        <div class="play-button" py-click="lambda e, id={video['id']}: tocar_video(id)">&#9658;</div>
+                        <div class="thumbnail-container">
+                            <img src="{video['thumbnail']}" alt="{video['title']}">
+                            <div class="play-overlay" py-click="lambda e, id={video['id']}: tocar_video(id)">
+                                <div class="play-icon">►</div>
+                            </div>
+                        </div>
                         <h3>{video['title']}</h3>
                     </div>
                     """
@@ -261,7 +289,8 @@
             match = re.search(r'(?:https?://)?(?:www\.)?(?:youtube\.com|youtu\.be)/(?:watch\?v=|embed/|v/|)([a-zA-Z0-9_-]{11})', video_url)
             if match:
                 video_id = match.group(1)
-                return f"https://www.youtube.com/embed/8n1hAT_gW8I16{video_id}/hqdefault.jpg"
+                # hqdefault.jpg é uma boa qualidade padrão
+                return f"https://www.youtube.com/embed/8n1hAT_gW8I24{video_id}/hqdefault.jpg"
             return ""
 
         def mostrar_formulario_admin(event=None):
@@ -276,7 +305,7 @@
                 </div>
                 <div class="form-group">
                     <label for="video-url">URL do Vídeo (Embed)</label>
-                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/8n1hAT_gW8I17">
+                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/8n1hAT_gW8I25">
                     <small>Se for YouTube, a capa será gerada automaticamente.</small>
                 </div>
                 <div class="form-group">
@@ -331,13 +360,13 @@
             renderizar_videos()
 
         # Atualizando os vídeos iniciais para usar URLs do YouTube de exemplo reais
-        videos[0]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I11" # Exemplo real
+        videos[0]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I19" 
         videos[0]["thumbnail"] = get_youtube_thumbnail(videos[0]["embed_url"]) or "https://picsum.photos/seed/lotr/300/200"
 
-        videos[1]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I13" # Exemplo real
+        videos[1]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I21" 
         videos[1]["thumbnail"] = get_youtube_thumbnail(videos[1]["embed_url"]) or "https://picsum.photos/seed/breakingbad/300/200"
 
-        videos[2]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I15" # Exemplo real
+        videos[2]["embed_url"] = "https://www.youtube.com/embed/8n1hAT_gW8I23" 
         videos[2]["thumbnail"] = get_youtube_thumbnail(videos[2]["embed_url"]) or "https://picsum.photos/seed/aot/300/200"
 
         renderizar_videos()
