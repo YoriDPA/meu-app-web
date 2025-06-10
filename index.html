@@ -124,6 +124,37 @@
         .form-group textarea { min-height: 100px; resize: vertical; }
         .submit-button { width: 100%; padding: 12px; background-color: #007bff; border: none; color: white; font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
         .submit-button:hover { background-color: #0056b3; }
+
+        /* Estilos para a lista de canais M3U editável */
+        .m3u-list-container { margin-top: 20px; }
+        .m3u-list-container h2 { margin-bottom: 15px; color: #fff; }
+        .m3u-list-item {
+            background-color: #1f1f1f;
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        .m3u-list-item:last-child { border-bottom: none; }
+        .m3u-list-item button {
+            background-color: #dc3545; /* Red */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-left: 10px;
+        }
+        .m3u-list-item button:hover { background-color: #c82333; }
+        .add-m3u-channel-form {
+            background-color: #1f1f1f;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -144,8 +175,8 @@
                         </ul>
                     </li>
                     <li><a id="nav-aovivo" py-click="mostrar_canal_ao_vivo">Ao Vivo</a></li>
-                    <li><a id="nav-m3u-input" py-click="mostrar_form_m3u_input">Reproduzir M3U</a></li> 
-                </ul>
+                    <li><a id="nav-m3u-input" py-click="mostrar_form_m3u_input">Reproduzir M3U</a></li>
+                    <li><a id="nav-gerenciar-m3u" py-click="mostrar_gerenciador_m3u">Gerenciar M3U</a></li> </ul>
             </nav>
         </div>
     </header>
@@ -161,7 +192,7 @@
 
     <py-script>
         from pyscript import display, HTML, pyfetch
-        from js import document, Hls, alert
+        from js import document, Hls, alert, localStorage, JSON # Importar localStorage e JSON
         import re
 
         videos = [
@@ -174,11 +205,14 @@
             "todos": document.getElementById("nav-todos"), "categorias": document.getElementById("nav-categorias"),
             "filmes": document.getElementById("nav-filmes"), "series": document.getElementById("nav-series"),
             "animes": document.getElementById("nav-animes"), "adultos": document.getElementById("nav-adultos"),
-            "aovivo": document.getElementById("nav-aovivo"), "m3u-input": document.getElementById("nav-m3u-input") # Novo link
+            "aovivo": document.getElementById("nav-aovivo"), 
+            "m3u-input": document.getElementById("nav-m3u-input"),
+            "gerenciar-m3u": document.getElementById("nav-gerenciar-m3u") # Novo link
         }
         sub_categorias = ["filmes", "series", "animes", "adultos"]
         
         ultima_categoria_vista = 'todos'
+        canais_m3u_personalizados = [] # Lista para armazenar canais M3U do usuário
 
         def gerenciar_link_ativo(link_ativo):
             for link in nav_links.values():
@@ -190,6 +224,27 @@
                 nav_links["categorias"].classList.add("active")
             elif link_ativo in nav_links:
                 nav_links[link_ativo].classList.add("active")
+
+        # Função para carregar canais do localStorage
+        def carregar_canais_m3u_salvos():
+            global canais_m3u_personalizados
+            try:
+                saved_data = localStorage.getItem("mineiro_m3u_channels")
+                if saved_data:
+                    canais_m3u_personalizados = JSON.parse(saved_data)
+                    print("Canais M3U carregados do localStorage:", canais_m3u_personalizados)
+                else:
+                    print("Nenhum canal M3U encontrado no localStorage.")
+            except Exception as e:
+                print(f"Erro ao carregar canais M3U do localStorage: {e}")
+
+        # Função para salvar canais no localStorage
+        def salvar_canais_m3u():
+            try:
+                localStorage.setItem("mineiro_m3u_channels", JSON.stringify(canais_m3u_personalizados))
+                print("Canais M3U salvos no localStorage.")
+            except Exception as e:
+                print(f"Erro ao salvar canais M3U no localStorage: {e}")
 
         def parse_m3u(content):
             channels = []
@@ -208,24 +263,40 @@
 
         async def mostrar_canal_ao_vivo(event=None):
             gerenciar_link_ativo("aovivo")
-            try:
-                response = await pyfetch("./minha_lista.m3u")
-                if not response.ok:
-                    raise Exception(f"Erro HTTP: {response.status} - {response.status_text}")
-                m3u_content = await response.text()
-                lista_de_canais = parse_m3u(m3u_content)
-                html_lista = "<h1>Canais Ao Vivo</h1><ul class='channel-list'>"
-                for canal in lista_de_canais:
+            # Lista de canais agora pode vir de várias fontes
+            lista_de_canais_para_exibir = []
+
+            # Prioridade 1: Canais personalizados do localStorage
+            if canais_m3u_personalizados:
+                lista_de_canais_para_exibir = canais_m3u_personalizados
+                print("Exibindo canais M3U personalizados.")
+            else:
+                # Prioridade 2: Carregar do arquivo minha_lista.m3u se não houver personalizados
+                try:
+                    response = await pyfetch("./minha_lista.m3u")
+                    if not response.ok:
+                        raise Exception(f"Erro HTTP: {response.status} - {response.status_text}")
+                    m3u_content = await response.text()
+                    lista_de_canais_para_exibir = parse_m3u(m3u_content)
+                    print("Exibindo canais do arquivo minha_lista.m3u.")
+                except Exception as e:
+                    display(f"<p style='color:red;'>Erro ao carregar a lista de canais padrão: {e}</p>", target="main-view", append=False)
+                    return
+
+            html_lista = "<h1>Canais Ao Vivo</h1>"
+            if not lista_de_canais_para_exibir:
+                html_lista += "<p>Nenhum canal ao vivo disponível. Adicione uma lista M3U na seção 'Gerenciar M3U'.</p>"
+            else:
+                html_lista += "<ul class='channel-list'>"
+                for canal in lista_de_canais_para_exibir:
                     html_lista += f"<li class='channel-list-item' py-click='lambda e: tocar_canal_m3u(\"{canal['url']}\", \"{canal['name']}\")'>{canal['name']}</li>"
                 html_lista += "</ul>"
-                display(HTML(html_lista), target="main-view", append=False)
-            except Exception as e:
-                display(f"<p style='color:red;'>Erro ao carregar a lista de canais: {e}</p>", target="main-view", append=False)
+            display(HTML(html_lista), target="main-view", append=False)
 
-        def tocar_canal_m3u(stream_url, channel_name="Stream M3U"): # Adicionado channel_name padrão
+        def tocar_canal_m3u(stream_url, channel_name="Stream M3U"):
             player_html = f"""
             <div>
-                <button class="back-button" py-click="mostrar_form_m3u_input">← Voltar</button>
+                <button class="back-button" py-click="mostrar_canal_ao_vivo">← Voltar para a Lista de Canais</button>
                 <h1>{channel_name}</h1>
                 <div class="video-iframe-container">
                     <video id="live-player" controls autoplay></video>
@@ -359,13 +430,13 @@
             alert("Vídeo adicionado com sucesso!")
             renderizar_videos()
 
-        # --- Nova Seção: Reproduzir M3U por Input ---
+        # --- Seção: Reproduzir M3U por Input (já existente) ---
         def mostrar_form_m3u_input(event=None):
-            gerenciar_link_ativo("m3u-input") # Define o link "Reproduzir M3U" como ativo
+            gerenciar_link_ativo("m3u-input")
             form_m3u_html = """
             <div class="admin-form-container">
                 <h1>Reproduzir Stream M3U/HLS</h1>
-                <p>Cole a URL do stream M3U/HLS que deseja reproduzir. Ex: `https://seu-servidor.com/stream.m3u8`</p>
+                <p>Cole a URL de um stream M3U/HLS (ex: `https://seu-servidor.com/stream.m3u8`) e clique em Reproduzir.</p>
                 <div class="form-group">
                     <label for="m3u-url-input">URL do Stream M3U/HLS</label>
                     <input type="text" id="m3u-url-input" placeholder="https://exemplo.com/seu-stream.m3u8" style="width: 100%;">
@@ -381,21 +452,138 @@
                 alert("Por favor, insira uma URL de stream M3U/HLS!")
                 return
             
-            # Usar a função existente tocar_canal_m3u
             tocar_canal_m3u(stream_url, "Stream do Usuário")
 
-        # Ajustando os vídeos iniciais para usar URLs do YouTube de exemplo reais
-        # e gerar as thumbnails no carregamento
-        videos[0]["embed_url"] = "https://www.youtube.com/embed/V75dMMIW2B4" 
-        videos[0]["thumbnail"] = get_youtube_thumbnail(videos[0]["embed_url"]) or "https://picsum.photos/seed/lotr/300/200"
+        # --- NOVA Seção: Gerenciar Listas M3U ---
+        async def mostrar_gerenciador_m3u(event=None):
+            gerenciar_link_ativo("gerenciar-m3u")
+            
+            # Exibir a lista de canais atuais e o formulário para adicionar novos
+            html_content = """
+            <div class="admin-form-container">
+                <h1>Gerenciar Canais M3U Personalizados</h1>
+                <p>Adicione uma URL de lista M3U (ex: `https://meu-servidor.com/lista.m3u`) ou adicione canais individualmente. <br>A lista salva será usada na aba "Ao Vivo".</p>
+                
+                <div class="form-group">
+                    <label for="m3u-list-url-input">URL da Lista M3U Completa</label>
+                    <input type="text" id="m3u-list-url-input" placeholder="https://example.com/sua_lista.m3u">
+                    <small>Ao carregar uma lista M3U completa, ela substituirá a lista atual.</small>
+                </div>
+                <button class="submit-button" py-click="carregar_e_salvar_lista_m3u">Carregar e Salvar Lista Completa</button>
+                <hr style="margin: 30px 0; border-color: #333;">
 
-        videos[1]["embed_url"] = "https://www.youtube.com/embed/HhF0_L9V_3A" 
-        videos[1]["thumbnail"] = get_youtube_thumbnail(videos[1]["embed_url"]) or "https://picsum.photos/seed/breakingbad/300/200"
+                <h2>Adicionar Canal Individualmente</h2>
+                <div class="add-m3u-channel-form">
+                    <div class="form-group">
+                        <label for="new-m3u-channel-name">Nome do Canal</label>
+                        <input type="text" id="new-m3u-channel-name" placeholder="Ex: Band News">
+                    </div>
+                    <div class="form-group">
+                        <label for="new-m3u-channel-url">URL do Canal (Stream HLS)</label>
+                        <input type="text" id="new-m3u-channel-url" placeholder="https://exemplo.com/stream/bandnews.m3u8">
+                    </div>
+                    <button class="submit-button" py-click="adicionar_canal_m3u_individual">Adicionar Canal</button>
+                </div>
 
-        videos[2]["embed_url"] = "https://www.youtube.com/embed/MGRm4IzK1ZQ" 
-        videos[2]["thumbnail"] = get_youtube_thumbnail(videos[2]["embed_url"]) or "https://picsum.photos/seed/aot/300/200"
+                <hr style="margin: 30px 0; border-color: #333;">
+                <h2>Canais Atuais</h2>
+                <div id="current-m3u-channels" class="m3u-list-container">
+                    </div>
+                <button class="back-button" py-click="limpar_canais_m3u_personalizados">Limpar Todos os Canais Salvos</button>
+            </div>
+            """
+            display(HTML(html_content), target="main-view", append=False)
+            renderizar_canais_m3u_atuais() # Chama a função para exibir os canais salvos
 
-        renderizar_videos()
+        async def carregar_e_salvar_lista_m3u(event=None):
+            global canais_m3u_personalizados
+            list_url = document.getElementById("m3u-list-url-input").value
+            if not list_url:
+                alert("Por favor, insira a URL da lista M3U completa!")
+                return
+            
+            try:
+                response = await pyfetch(list_url)
+                if not response.ok:
+                    raise Exception(f"Erro HTTP ao carregar lista: {response.status} - {response.status_text}")
+                m3u_content = await response.text()
+                
+                # Opcional: Validar se é realmente um arquivo M3U
+                if not m3u_content.strip().startswith("#EXTM3U"):
+                    alert("O conteúdo da URL não parece ser um arquivo M3U válido.")
+                    return
+
+                new_channels = parse_m3u(m3u_content)
+                if not new_channels:
+                    alert("A lista M3U não contém canais válidos.")
+                    return
+
+                canais_m3u_personalizados = new_channels # Substitui a lista atual
+                salvar_canais_m3u() # Salva no localStorage
+                alert("Lista M3U carregada e salva com sucesso!")
+                renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+            except Exception as e:
+                alert(f"Erro ao carregar e salvar a lista M3U: {e}")
+
+        def adicionar_canal_m3u_individual(event=None):
+            global canais_m3u_personalizados
+            name = document.getElementById("new-m3u-channel-name").value.strip()
+            url = document.getElementById("new-m3u-channel-url").value.strip()
+
+            if not name or not url:
+                alert("Por favor, preencha o nome e a URL do canal.")
+                return
+            
+            canais_m3u_personalizados.append({'name': name, 'url': url})
+            salvar_canais_m3u()
+            alert(f"Canal '{name}' adicionado com sucesso!")
+            document.getElementById("new-m3u-channel-name").value = "" # Limpa campos
+            document.getElementById("new-m3u-channel-url").value = ""
+            renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+
+        def remover_canal_m3u_individual(index):
+            global canais_m3u_personalizados
+            if 0 <= index < len(canais_m3u_personalizados):
+                removed_name = canais_m3u_personalizados[index]['name']
+                canais_m3u_personalizados.pop(index)
+                salvar_canais_m3u()
+                alert(f"Canal '{removed_name}' removido.")
+                renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+            else:
+                alert("Índice de canal inválido.")
+
+        def renderizar_canais_m3u_atuais():
+            list_container = document.getElementById("current-m3u-channels")
+            if not list_container: return # Evita erro se o container ainda não existe
+
+            html_list = "<ul class='channel-list'>"
+            if not canais_m3u_personalizados:
+                html_list += "<p>Nenhum canal M3U personalizado adicionado.</p>"
+            else:
+                for i, canal in enumerate(canais_m3u_personalizados):
+                    html_list += f"""
+                    <li class='m3u-list-item'>
+                        <span>{canal['name']}</span>
+                        <div>
+                            <button py-click="lambda e: tocar_canal_m3u('{canal['url']}', '{canal['name']}')">Play</button>
+                            <button py-click="lambda e: remover_canal_m3u_individual({i})">Remover</button>
+                        </div>
+                    </li>
+                    """
+            html_list += "</ul>"
+            display(HTML(html_list), target="current-m3u-channels", append=False)
+
+        def limpar_canais_m3u_personalizados(event=None):
+            if confirm("Tem certeza que deseja limpar todos os canais M3U personalizados?"):
+                global canais_m3u_personalizados
+                canais_m3u_personalizados = []
+                salvar_canais_m3u()
+                alert("Todos os canais M3U personalizados foram removidos.")
+                renderizar_canais_m3u_atuais()
+
+        # --- Início da Execução ---
+        carregar_canais_m3u_salvos() # Carrega os canais salvos ao iniciar
+        renderizar_videos() # Renderiza a tela inicial
     </py-script>
 
 </body>
