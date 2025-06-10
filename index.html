@@ -176,7 +176,8 @@
                     </li>
                     <li><a id="nav-aovivo" py-click="mostrar_canal_ao_vivo">Ao Vivo</a></li>
                     <li><a id="nav-m3u-input" py-click="mostrar_form_m3u_input">Reproduzir M3U</a></li>
-                    <li><a id="nav-gerenciar-m3u" py-click="mostrar_gerenciador_m3u">Gerenciar M3U</a></li> </ul>
+                    <li><a id="nav-gerenciar-m3u" py-click="mostrar_gerenciador_m3u">Gerenciar M3U</a></li>
+                </ul>
             </nav>
         </div>
     </header>
@@ -192,13 +193,20 @@
 
     <py-script>
         from pyscript import display, HTML, pyfetch
-        from js import document, Hls, alert, localStorage, JSON # Importar localStorage e JSON
+        from js import document, Hls, alert, localStorage, JSON 
         import re
 
+        # URLs de embed do YouTube válidas para teste
+        YOUTUBE_EMBED_URLS = {
+            "lotr": "https://www.youtube.com/embed/V9P_20Gz-Lw", # Trailer Senhor dos Anéis
+            "breaking_bad": "https://www.youtube.com/embed/lrcqbnyGLoA", # Trailer Breaking Bad
+            "attack_on_titan": "https://www.youtube.com/embed/M00k_W5N09Q" # Trailer Attack on Titan
+        }
+
         videos = [
-            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/V75dMMIW2B4" },
-            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/HhF0_L9V_3A" },
-            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/MGRm4IzK1ZQ" }
+            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": YOUTUBE_EMBED_URLS["lotr"] },
+            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": YOUTUBE_EMBED_URLS["breaking_bad"] },
+            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": YOUTUBE_EMBED_URLS["attack_on_titan"] }
         ]
         
         nav_links = {
@@ -207,18 +215,18 @@
             "animes": document.getElementById("nav-animes"), "adultos": document.getElementById("nav-adultos"),
             "aovivo": document.getElementById("nav-aovivo"), 
             "m3u-input": document.getElementById("nav-m3u-input"),
-            "gerenciar-m3u": document.getElementById("nav-gerenciar-m3u") # Novo link
+            "gerenciar-m3u": document.getElementById("nav-gerenciar-m3u") 
         }
         sub_categorias = ["filmes", "series", "animes", "adultos"]
         
         ultima_categoria_vista = 'todos'
-        canais_m3u_personalizados = [] # Lista para armazenar canais M3U do usuário
+        canais_m3u_personalizados = [] 
 
         def gerenciar_link_ativo(link_ativo):
             for link in nav_links.values():
                 if link: link.classList.remove("active")
             
-            if link_ativo is None: # Nenhum link ativo (ex: no form admin)
+            if link_ativo is None: 
                 return
             elif link_ativo in sub_categorias:
                 nav_links["categorias"].classList.add("active")
@@ -263,24 +271,23 @@
 
         async def mostrar_canal_ao_vivo(event=None):
             gerenciar_link_ativo("aovivo")
-            # Lista de canais agora pode vir de várias fontes
             lista_de_canais_para_exibir = []
 
-            # Prioridade 1: Canais personalizados do localStorage
             if canais_m3u_personalizados:
                 lista_de_canais_para_exibir = canais_m3u_personalizados
                 print("Exibindo canais M3U personalizados.")
             else:
-                # Prioridade 2: Carregar do arquivo minha_lista.m3u se não houver personalizados
                 try:
                     response = await pyfetch("./minha_lista.m3u")
                     if not response.ok:
+                        # Opcional: tentar buscar de um URL remoto padrão se o arquivo local não existir
+                        # Ex: response = await pyfetch("https://exemplo.com/lista_padrao.m3u")
                         raise Exception(f"Erro HTTP: {response.status} - {response.status_text}")
                     m3u_content = await response.text()
                     lista_de_canais_para_exibir = parse_m3u(m3u_content)
                     print("Exibindo canais do arquivo minha_lista.m3u.")
                 except Exception as e:
-                    display(f"<p style='color:red;'>Erro ao carregar a lista de canais padrão: {e}</p>", target="main-view", append=False)
+                    display(f"<p style='color:red;'>Erro ao carregar a lista de canais padrão: {e}. Certifique-se que 'minha_lista.m3u' existe ou adicione uma lista em 'Gerenciar M3U'.</p>", target="main-view", append=False)
                     return
 
             html_lista = "<h1>Canais Ao Vivo</h1>"
@@ -358,10 +365,17 @@
             display(HTML(player_html), target="main-view", append=False)
 
         def get_youtube_thumbnail(video_url):
-            match = re.search(r'(?:https?://)?(?:www\.)?(?:youtube\.com|youtu\.be)/(?:watch\?v=|embed/|v/|)([a-zA-Z0-9_-]{11})', video_url)
-            if match:
-                video_id = match.group(1)
+            # Adaptação para extrair ID de URLs de embed ou URLs normais do YouTube
+            match_embed = re.search(r'youtube\.com/embed/([a-zA-Z0-9_-]{11})', video_url)
+            if match_embed:
+                video_id = match_embed.group(1)
                 return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+            
+            match_watch = re.search(r'(?:youtube\.com/(?:watch\?v=|v/)|youtu\.be/)([a-zA-Z0-9_-]{11})', video_url)
+            if match_watch:
+                video_id = match_watch.group(1)
+                return f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+            
             return ""
 
         def mostrar_formulario_admin(event=None):
@@ -376,7 +390,7 @@
                 </div>
                 <div class="form-group">
                     <label for="video-url">URL do Vídeo (Embed)</label>
-                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/V75dMMIW2B4">
+                    <input type="text" id="video-url" placeholder="Ex: https://www.youtube.com/embed/SeuVideoID">
                     <small>Se for YouTube, a capa será gerada automaticamente.</small>
                 </div>
                 <div class="form-group">
@@ -421,7 +435,13 @@
                 else:
                     final_thumbnail = "https://picsum.photos/seed/placeholder/300/200" 
 
-            novo_id = max(v['id'] for v in videos) + 1 if videos else 1
+            # Correção na lógica de novo_id para garantir que funcione mesmo com a lista vazia
+            novo_id = 1
+            if videos:
+                # Cria uma lista de IDs existentes para encontrar o máximo
+                existing_ids = [v['id'] for v in videos]
+                novo_id = max(existing_ids) + 1
+
             novo_video = {
                 "id": novo_id, "title": title, "thumbnail": final_thumbnail,
                 "categoria": categoria, "description": description, "embed_url": embed_url
@@ -458,7 +478,6 @@
         async def mostrar_gerenciador_m3u(event=None):
             gerenciar_link_ativo("gerenciar-m3u")
             
-            # Exibir a lista de canais atuais e o formulário para adicionar novos
             html_content = """
             <div class="admin-form-container">
                 <h1>Gerenciar Canais M3U Personalizados</h1>
@@ -493,7 +512,7 @@
             </div>
             """
             display(HTML(html_content), target="main-view", append=False)
-            renderizar_canais_m3u_atuais() # Chama a função para exibir os canais salvos
+            renderizar_canais_m3u_atuais() 
 
         async def carregar_e_salvar_lista_m3u(event=None):
             global canais_m3u_personalizados
@@ -508,7 +527,6 @@
                     raise Exception(f"Erro HTTP ao carregar lista: {response.status} - {response.status_text}")
                 m3u_content = await response.text()
                 
-                # Opcional: Validar se é realmente um arquivo M3U
                 if not m3u_content.strip().startswith("#EXTM3U"):
                     alert("O conteúdo da URL não parece ser um arquivo M3U válido.")
                     return
@@ -518,10 +536,10 @@
                     alert("A lista M3U não contém canais válidos.")
                     return
 
-                canais_m3u_personalizados = new_channels # Substitui a lista atual
-                salvar_canais_m3u() # Salva no localStorage
+                canais_m3u_personalizados = new_channels 
+                salvar_canais_m3u() 
                 alert("Lista M3U carregada e salva com sucesso!")
-                renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+                renderizar_canais_m3u_atuais() 
             except Exception as e:
                 alert(f"Erro ao carregar e salvar a lista M3U: {e}")
 
@@ -537,9 +555,9 @@
             canais_m3u_personalizados.append({'name': name, 'url': url})
             salvar_canais_m3u()
             alert(f"Canal '{name}' adicionado com sucesso!")
-            document.getElementById("new-m3u-channel-name").value = "" # Limpa campos
+            document.getElementById("new-m3u-channel-name").value = "" 
             document.getElementById("new-m3u-channel-url").value = ""
-            renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+            renderizar_canais_m3u_atuais() 
 
         def remover_canal_m3u_individual(index):
             global canais_m3u_personalizados
@@ -548,13 +566,13 @@
                 canais_m3u_personalizados.pop(index)
                 salvar_canais_m3u()
                 alert(f"Canal '{removed_name}' removido.")
-                renderizar_canais_m3u_atuais() # Atualiza a exibição da lista
+                renderizar_canais_m3u_atuais() 
             else:
                 alert("Índice de canal inválido.")
 
         def renderizar_canais_m3u_atuais():
             list_container = document.getElementById("current-m3u-channels")
-            if not list_container: return # Evita erro se o container ainda não existe
+            if not list_container: return 
 
             html_list = "<ul class='channel-list'>"
             if not canais_m3u_personalizados:
@@ -582,8 +600,10 @@
                 renderizar_canais_m3u_atuais()
 
         # --- Início da Execução ---
-        carregar_canais_m3u_salvos() # Carrega os canais salvos ao iniciar
-        renderizar_videos() # Renderiza a tela inicial
+        # Primeiro, carregue os canais M3U salvos
+        carregar_canais_m3u_salvos() 
+        # Em seguida, renderize a tela inicial de vídeos
+        renderizar_videos() 
     </py-script>
 
 </body>
