@@ -1,77 +1,185 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyScript App</title>
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mineiro</title>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    
+    <py-config>
+        [[fetch]]
+        files = ["./minha_lista.m3u"]
+    </py-config>
+    
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        .app-header { background-color: #1f1f1f; padding: 1rem 0; border-bottom: 1px solid #333; }
+        .app-header .container { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; }
+        .main-nav ul { list-style-type: none; display: flex; align-items: center; gap: 20px; }
+        .main-nav a { color: #ffffff; text-decoration: none; font-size: 1rem; transition: color 0.3s; text-transform: uppercase; cursor: pointer; display: block; padding: 5px 0; }
+        .main-nav a:hover, .main-nav a.active { color: #007bff; }
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; background-color: #2a2a2a; min-width: 160px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.5); z-index: 1; list-style-type: none; border-radius: 4px; }
+        .dropdown-content a { padding: 12px 16px; text-align: left; font-size: 0.9rem; }
+        .dropdown-content a:hover { background-color: #3c3c3c; }
+        .dropdown:hover .dropdown-content { display: block; }
+        .main-content { padding: 40px 0; min-height: 60vh; }
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .video-card { background-color: #1f1f1f; border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s; }
+        .video-card:hover { transform: scale(1.05); }
+        .video-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .video-card h3 { padding: 15px; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .back-button { display: inline-block; background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-bottom: 20px; cursor: pointer; border: none; }
+        .back-button:hover { background-color: #0056b3; }
+        .video-iframe-container { position: relative; width: 100%; padding-bottom: 56.25%; height: 0; margin-top: 20px; }
+        .video-iframe-container iframe, .video-iframe-container video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; background-color: black; }
+        .video-details { margin-top: 20px; }
+        .video-details p { font-size: 1rem; line-height: 1.6; color: #ccc; }
+        .channel-list { list-style: none; padding: 0; }
+        .channel-list-item { background-color: #1f1f1f; padding: 15px; border-bottom: 1px solid #333; cursor: pointer; transition: background-color 0.2s; }
+        .channel-list-item:hover { background-color: #2a2a2a; }
+        .app-footer { background-color: #1f1f1f; text-align: center; padding: 1.5rem 0; margin-top: 40px; border-top: 1px solid #333; font-size: 0.9rem; }
+        .app-footer a { color: #007bff; text-decoration: none; cursor: pointer; }
+        .app-footer a:hover { text-decoration: underline; }
+        .admin-form-container { max-width: 700px; margin: 0 auto; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; background-color: #2a2a2a; border: 1px solid #444; color: white; border-radius: 5px; font-size: 1rem; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .submit-button { width: 100%; padding: 12px; background-color: #007bff; border: none; color: white; font-size: 1.2rem; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.2s; }
+        .submit-button:hover { background-color: #0056b3; }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <nav>
-            <h1 id="titulo-categoria"></h1>
-            <ul>
-                <li><a href="#" id="nav-todos" py-click="renderizar_videos('todos')">Todos</a></li>
-                <li><a href="#" id="nav-categorias">Categorias</a>
-                    <ul>
-                        <li><a href="#" id="nav-filmes" py-click="renderizar_videos('filmes')">Filmes</a></li>
-                        <li><a href="#" id="nav-series" py-click="renderizar_videos('series')">Séries</a></li>
-                        <li><a href="#" id="nav-animes" py-click="renderizar_videos('animes')">Animes</a></li>
-                        <li><a href="#" id="nav-adultos" py-click="renderizar_videos('adultos')">Adultos</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </nav>
-        <div id="video-list" class="video-grid">
-            </div>
-    </div>
 
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <header class="app-header">
+        <div class="container">
+            <div class="logo">Mineiro</div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a id="nav-todos" py-click="lambda e: renderizar_videos('todos')" class="active">Início</a></li>
+                    <li class="dropdown">
+                        <a id="nav-categorias" href="javascript:void(0)">Categorias</a>
+                        <ul class="dropdown-content">
+                            <li><a id="nav-filmes" py-click="lambda e: renderizar_videos('filmes')">Filmes</a></li>
+                            <li><a id="nav-series" py-click="lambda e: renderizar_videos('series')">Séries</a></li>
+                            <li><a id="nav-animes" py-click="lambda e: renderizar_videos('animes')">Animes</a></li>
+                            <li><a id="nav-adultos" py-click="lambda e: renderizar_videos('adultos')">Adultos</a></li>
+                        </ul>
+                    </li>
+                    <li><a id="nav-aovivo" py-click="mostrar_canal_ao_vivo">Ao Vivo</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main id="main-view" class="container main-content"></main>
+
+    <footer class="app-footer">
+        <div class="container">
+            © 2025 Mineiro. Todos os direitos reservados. | 
+            <a id="admin-link" py-click="mostrar_formulario_admin">Adicionar Vídeo</a>
+        </div>
+    </footer>
 
     <py-script>
-        from pyscript import display, HTML
-        from js import document
+        from pyscript import display, HTML, pyfetch
+        from js import document, Hls, alert
+        import re
 
         videos = [
-            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes" },
-            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series" },
-            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes" },
-            { "id": 4, "title": "Pulp Fiction", "thumbnail": "https://picsum.photos/seed/pulpfiction/300/200", "categoria": "filmes" },
-            { "id": 5, "title": "Game of Thrones", "thumbnail": "https://picsum.photos/seed/got/300/200", "categoria": "series" },
-            { "id": 6, "title": "Um Filme Adulto Genérico", "thumbnail": "https://picsum.photos/seed/adult/300/200", "categoria": "adultos" },
-            { "id": 7, "title": "Death Note", "thumbnail": "https://picsum.photos/seed/deathnote/300/200", "categoria": "animes" },
-            { "id": 8, "title": "The Office", "thumbnail": "https://picsum.photos/seed/theoffice/300/200", "categoria": "series" },
+            { "id": 1, "title": "O Senhor dos Anéis", "thumbnail": "https://picsum.photos/seed/lotr/300/200", "categoria": "filmes", "description": "Um hobbit do Condado e oito companheiros partem em uma jornada para destruir o poderoso Um Anel e salvar a Terra-média do Lorde das Trevas Sauron.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I0" },
+            { "id": 2, "title": "Breaking Bad", "thumbnail": "https://picsum.photos/seed/breakingbad/300/200", "categoria": "series", "description": "Um professor de química do ensino médio diagnosticado com câncer de pulmão inoperável passa a produzir e vender metanfetamina para garantir o futuro de sua família.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I1" },
+            { "id": 3, "title": "Attack on Titan", "thumbnail": "https://picsum.photos/seed/aot/300/200", "categoria": "animes", "description": "Depois que sua cidade natal é destruída e sua mãe é morta, o jovem Eren Yeager jura limpar a terra dos titãs humanóides gigantes que levaram a humanidade à beira da extinção.", "embed_url": "https://www.youtube.com/embed/8n1hAT_gW8I2" }
         ]
-
-        titulo_categoria = document.getElementById("titulo-categoria")
-        nav_links = {
-            "todos": document.getElementById("nav-todos"),
-            "categorias": document.getElementById("nav-categorias"),
-            "filmes": document.getElementById("nav-filmes"),
-            "series": document.getElementById("nav-series"),
-            "animes": document.getElementById("nav-animes"),
-            "adultos": document.getElementById("nav-adultos")
-        }
         
+        nav_links = {
+            "todos": document.getElementById("nav-todos"), "categorias": document.getElementById("nav-categorias"),
+            "filmes": document.getElementById("nav-filmes"), "series": document.getElementById("nav-series"),
+            "animes": document.getElementById("nav-animes"), "adultos": document.getElementById("nav-adultos"),
+            "aovivo": document.getElementById("nav-aovivo")
+        }
         sub_categorias = ["filmes", "series", "animes", "adultos"]
+        
+        ultima_categoria_vista = 'todos'
+
+        def gerenciar_link_ativo(link_ativo):
+            for link in nav_links.values():
+                if link: link.classList.remove("active")
+            
+            if link_ativo is None: # Nenhum link ativo (ex: no form admin)
+                return
+            elif link_ativo in sub_categorias:
+                nav_links["categorias"].classList.add("active")
+            elif link_ativo in nav_links:
+                nav_links[link_ativo].classList.add("active")
+
+        def parse_m3u(content):
+            channels = []
+            lines = content.strip().split('\n')
+            for i in range(len(lines)):
+                if lines[i].startswith('#EXTINF:'):
+                    info_line = lines[i]
+                    name_match = re.search(r',(.+)', info_line)
+                    name = name_match.group(1).strip() if name_match else 'Canal Desconhecido'
+                    stream_url = ""
+                    if i + 1 < len(lines) and not lines[i+1].startswith('#'):
+                        stream_url = lines[i+1].strip()
+                    if name and stream_url:
+                        channels.append({'name': name, 'url': stream_url})
+            return channels
+
+        async def mostrar_canal_ao_vivo(event=None):
+            gerenciar_link_ativo("aovivo")
+            try:
+                response = await pyfetch("./minha_lista.m3u")
+                if not response.ok:
+                    raise Exception(f"Erro HTTP: {response.status} - {response.status_text}")
+                m3u_content = await response.text()
+                lista_de_canais = parse_m3u(m3u_content)
+                html_lista = "<h1>Canais Ao Vivo</h1><ul class='channel-list'>"
+                for canal in lista_de_canais:
+                    html_lista += f"<li class='channel-list-item' py-click='lambda e: tocar_canal_m3u(\"{canal['url']}\", \"{canal['name']}\")'>{canal['name']}</li>"
+                html_lista += "</ul>"
+                display(HTML(html_lista), target="main-view", append=False)
+            except Exception as e:
+                display(f"<p style='color:red;'>Erro ao carregar a lista de canais: {e}</p>", target="main-view", append=False)
+
+        def tocar_canal_m3u(stream_url, channel_name):
+            player_html = f"""
+            <div>
+                <button class="back-button" py-click="mostrar_canal_ao_vivo">← Voltar para a Lista de Canais</button>
+                <h1>{channel_name}</h1>
+                <div class="video-iframe-container">
+                    <video id="live-player" controls autoplay></video>
+                </div>
+            </div>
+            """
+            display(HTML(player_html), target="main-view", append=False)
+            if Hls.isSupported():
+                video_element = document.getElementById("live-player")
+                hls = Hls.new()
+                hls.loadSource(stream_url)
+                hls.attachMedia(video_element)
+            else:
+                print("HLS não é suportado neste navegador.")
 
         def renderizar_videos(categoria_filtro='todos'):
+            global ultima_categoria_vista
+            ultima_categoria_vista = categoria_filtro
+            gerenciar_link_ativo(categoria_filtro)
             if categoria_filtro == 'todos':
                 videos_para_mostrar = videos
-                titulo_categoria.innerText = "Todos os Vídeos"
+                titulo_html = "<h1>Todos os Vídeos</h1>"
             else:
                 videos_para_mostrar = [v for v in videos if v['categoria'] == categoria_filtro]
-                titulo_categoria.innerText = categoria_filtro.capitalize()
-
-            for cat, link in nav_links.items():
-                if link:
-                    link.classList.remove("active")
-            
-            if categoria_filtro in sub_categorias:
-                nav_links["categorias"].classList.add("active")
-            elif categoria_filtro in nav_links:
-                nav_links[categoria_filtro].classList.add("active")
-
+                titulo_html = f"<h1>{categoria_filtro.capitalize()}</h1>"
             html_videos = ""
             if not videos_para_mostrar:
                 html_videos = "<p>Nenhum vídeo encontrado nesta categoria.</p>"
@@ -83,74 +191,80 @@
                         <h3>{video['title']}</h3>
                     </div>
                     """
-            
-            display(HTML(html_videos), target="video-list")
+            conteudo_da_view = f"{titulo_html}<div id='video-list' class='video-grid'>{html_videos}</div>"
+            display(HTML(conteudo_da_view), target="main-view", append=False)
 
-        def tocar_video(id):
-            print(f"Vídeo com ID {id} foi clicado! A lógica para tocar o vídeo viria aqui.")
-            titulo_categoria.innerText = f"Tocando vídeo ID: {id}"
-            display("", target="video-list")
+        def tocar_video(id_video):
+            video_selecionado = next((v for v in videos if v['id'] == id_video), None)
+            if not video_selecionado: return
+            player_html = f"""
+                <div>
+                    <button class="back-button" py-click="lambda e: renderizar_videos(ultima_categoria_vista)">← Voltar para a lista</button>
+                    <h1>{video_selecionado['title']}</h1>
+                    <div class="video-iframe-container">
+                        <iframe src="{video_selecionado['embed_url']}" title="{video_selecionado['title']}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-details"><p>{video_selecionado['description']}</p></div>
+                </div>
+            """
+            display(HTML(player_html), target="main-view", append=False)
+
+        def mostrar_formulario_admin(event=None):
+            gerenciar_link_ativo(None)
+            form_html = """
+            <div class="admin-form-container">
+                <h1>Adicionar Novo Vídeo</h1>
+                <p>Preencha os dados abaixo. Os vídeos adicionados são temporários e sumirão ao recarregar a página.</p>
+                <div class="form-group">
+                    <label for="video-title">Título</label>
+                    <input type="text" id="video-title" placeholder="Ex: Vingadores: Ultimato">
+                </div>
+                <div class="form-group">
+                    <label for="video-thumb">URL da Imagem (Thumbnail)</label>
+                    <input type="text" id="video-thumb" placeholder="https://exemplo.com/imagem.jpg">
+                </div>
+                <div class="form-group">
+                    <label for="video-url">URL do Vídeo (Embed)</label>
+                    <input type="text" id="video-url" placeholder="https://www.youtube.com/embed/8n1hAT_gW8I3...">
+                </div>
+                <div class="form-group">
+                    <label for="video-desc">Descrição</label>
+                    <textarea id="video-desc" placeholder="Uma breve sinopse do vídeo."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="video-category">Categoria</label>
+                    <select id="video-category">
+                        <option value="filmes">Filmes</option>
+                        <option value="series">Séries</option>
+                        <option value="animes">Animes</option>
+                        <option value="adultos">Adultos</option>
+                    </select>
+                </div>
+                <button class="submit-button" py-click="adicionar_novo_video">Salvar Vídeo</button>
+            </div>
+            """
+            display(HTML(form_html), target="main-view", append=False)
+
+        def adicionar_novo_video(event=None):
+            title = document.getElementById("video-title").value
+            thumbnail = document.getElementById("video-thumb").value
+            embed_url = document.getElementById("video-url").value
+            description = document.getElementById("video-desc").value
+            categoria = document.getElementById("video-category").value
+            if not all([title, thumbnail, embed_url, description, categoria]):
+                alert("Por favor, preencha todos os campos!")
+                return
+            novo_id = max(v['id'] for v in videos) + 1 if videos else 1
+            novo_video = {
+                "id": novo_id, "title": title, "thumbnail": thumbnail,
+                "categoria": categoria, "description": description, "embed_url": embed_url
+            }
+            videos.append(novo_video)
+            alert("Vídeo adicionado com sucesso!")
+            renderizar_videos()
 
         renderizar_videos()
     </py-script>
-    <style>
-        /* Apenas um CSS básico para os cards */
-        .video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            padding: 20px;
-        }
-        .video-card {
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .video-card:hover {
-            transform: translateY(-5px);
-        }
-        .video-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        .video-card h3 {
-            padding: 10px;
-            font-size: 1.1em;
-            text-align: center;
-        }
-        nav {
-            background-color: #f0f0f0;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        nav ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            gap: 15px;
-        }
-        nav ul li a {
-            text-decoration: none;
-            color: #333;
-            padding: 5px 10px;
-            border-radius: 5px;
-            transition: background-color 0.2s;
-        }
-        nav ul li a:hover, nav ul li a.active {
-            background-color: #ddd;
-        }
-        nav #titulo-categoria {
-            margin-right: auto;
-            font-size: 1.5em;
-        }
-    </style>
+
 </body>
 </html>
